@@ -5,8 +5,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deployer, kycManager } = await getNamedAccounts();
   log("----------------------------------------------------");
   log("Deploying CarbonToken implementation...");
-  const FUNCTIONS_ROUTER = "0xC22a79eBA640940ABB6dF0f7982cc119578E11De";
-  const DON_ID = "0x66756e2d706f6c79676f6e2d616d6f792d310000000000000000000000000000";
+  const FUNCTIONS_ROUTER = "0xf9B8d898172181729416Ab6C8974d3b49C10BA72";
+  const DON_ID = "0x66756e2d626173652d7365706f6c69612d310000000000000000000000000000";
   const SUB_ID = 0;
   const carbonToken = await deploy("CarbonToken", {
     from: deployer,

@@ -17,8 +17,8 @@ contract GoldToken is BaseRWAToken {
     ) external initializer {
         if (priceFeed_ == address(0)) revert RWALib.ZeroAddress();
         __BaseRWAToken_init(
-            "NexusRWA Gold",
-            "nxGOLD",
+            "Terravio Gold",
+            "tvGOLD",
             asset_,
             RWALib.AssetType.GOLD,
             ipfsCID_,

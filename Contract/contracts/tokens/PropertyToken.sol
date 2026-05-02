@@ -32,8 +32,8 @@ contract PropertyToken is BaseRWAToken, FunctionsClientUpgradeable {
     ) external initializer {
         if (functionsRouter_ == address(0)) revert RWALib.ZeroAddress();
         __BaseRWAToken_init(
-            "NexusRWA Property",
-            "nxPROP",
+            "Terravio Property",
+            "tvPROP",
             asset_,
             RWALib.AssetType.REAL_ESTATE,
             ipfsCID_,

@@ -36,8 +36,8 @@ contract CarbonToken is BaseRWAToken, FunctionsClientUpgradeable {
     ) external initializer {
         if (functionsRouter_ == address(0)) revert RWALib.ZeroAddress();
         __BaseRWAToken_init(
-            "NexusRWA Carbon",
-            "nxCRBN",
+            "Terravio Carbon",
+            "tvCRBN",
             asset_,
             RWALib.AssetType.CARBON_CREDIT,
             ipfsCID_,
