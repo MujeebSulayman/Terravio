@@ -4,10 +4,11 @@ import { ERC4626Upgradeable }          from "@openzeppelin/contracts-upgradeable
 import { EIP712Upgradeable }           from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import { OwnableUpgradeable }          from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { PausableUpgradeable }         from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import { ReentrancyGuard }             from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { ReentrancyGuardUpgradeable }  from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import { UUPSUpgradeable }             from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import { ECDSA }                        from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { IERC20 }                       from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IERC20Metadata }               from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import { IRWAToken }  from "../interfaces/IRWAToken.sol";
 import { RWALib }     from "../libraries/RWALib.sol";
 abstract contract BaseRWAToken is
@@ -17,7 +18,7 @@ abstract contract BaseRWAToken is
     EIP712Upgradeable,
     OwnableUpgradeable,
     PausableUpgradeable,
-    ReentrancyGuard,
+    ReentrancyGuardUpgradeable,
     UUPSUpgradeable
 {
     using ECDSA for bytes32;
@@ -60,6 +61,7 @@ abstract contract BaseRWAToken is
         __ERC4626_init(IERC20(asset_));
         __Ownable_init(admin_);
         __Pausable_init();
+        __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
         kycManager = kycManager_;
         _metadata = RWALib.AssetMetadata({
@@ -150,7 +152,7 @@ abstract contract BaseRWAToken is
         address from,
         address to,
         uint256 amount
-    ) internal virtual override(ERC20Upgradeable) updateReward(from) {
+    ) internal virtual override(ERC20Upgradeable, ERC4626Upgradeable) updateReward(from) {
         if (from != address(0) && to != address(0)) {
             if (!_whitelist[from]) revert RWALib.NotWhitelisted(from);
             if (!_whitelist[to])   revert RWALib.NotWhitelisted(to);
@@ -188,19 +190,19 @@ abstract contract BaseRWAToken is
         return interfaceId == type(IRWAToken).interfaceId;
     }
     function decimals()
-        public pure override(ERC20Upgradeable, ERC4626Upgradeable)
+        public pure override(ERC20Upgradeable, ERC4626Upgradeable, IERC20Metadata)
         returns (uint8)
     {
         return 18;
     }
     function name()
-        public view override(ERC20Upgradeable)
+        public view override(ERC20Upgradeable, IERC20Metadata)
         returns (string memory)
     {
         return _metadata.name;
     }
     function symbol()
-        public view override(ERC20Upgradeable)
+        public view override(ERC20Upgradeable, IERC20Metadata)
         returns (string memory)
     {
         return _metadata.symbol;

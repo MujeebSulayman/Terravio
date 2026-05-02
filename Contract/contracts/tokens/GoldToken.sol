@@ -1,5 +1,5 @@
 pragma solidity ^0.8.31;
-import { AggregatorV3Interface } from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import { AggregatorV3Interface } from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import { BaseRWAToken }          from "../core/BaseRWAToken.sol";
 import { RWALib }                from "../libraries/RWALib.sol";
 contract GoldToken is BaseRWAToken {

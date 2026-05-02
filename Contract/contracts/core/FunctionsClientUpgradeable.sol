@@ -1,7 +1,7 @@
 pragma solidity ^0.8.31;
-import {IFunctionsRouter} from "@chainlink/contracts/src/v0.8/functions/dev/v1_X/interfaces/IFunctionsRouter.sol";
-import {IFunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_X/interfaces/IFunctionsClient.sol";
-import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/dev/v1_X/libraries/FunctionsRequest.sol";
+import {IFunctionsRouter} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/interfaces/IFunctionsRouter.sol";
+import {IFunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/interfaces/IFunctionsClient.sol";
+import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 abstract contract FunctionsClientUpgradeable is
