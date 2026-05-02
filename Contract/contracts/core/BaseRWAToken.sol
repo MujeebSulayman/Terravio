@@ -13,6 +13,7 @@ import { IRWAToken }  from "../interfaces/IRWAToken.sol";
 import { RWALib }     from "../libraries/RWALib.sol";
 abstract contract BaseRWAToken is
     IRWAToken,
+    IERC20Metadata,
     ERC20Upgradeable,
     ERC4626Upgradeable,
     EIP712Upgradeable,
@@ -152,7 +153,7 @@ abstract contract BaseRWAToken is
         address from,
         address to,
         uint256 amount
-    ) internal virtual override(ERC20Upgradeable, ERC4626Upgradeable) updateReward(from) {
+    ) internal virtual override(ERC20Upgradeable) updateReward(from) {
         if (from != address(0) && to != address(0)) {
             if (!_whitelist[from]) revert RWALib.NotWhitelisted(from);
             if (!_whitelist[to])   revert RWALib.NotWhitelisted(to);
