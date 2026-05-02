@@ -17,7 +17,7 @@ abstract contract BaseRWAToken is
     EIP712Upgradeable,
     OwnableUpgradeable,
     PausableUpgradeable,
-    ReentrancyGuardUpgradeable,
+    ReentrancyGuard,
     UUPSUpgradeable
 {
     using ECDSA for bytes32;
@@ -60,7 +60,6 @@ abstract contract BaseRWAToken is
         __ERC4626_init(IERC20(asset_));
         __Ownable_init(admin_);
         __Pausable_init();
-        __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
         kycManager = kycManager_;
         _metadata = RWALib.AssetMetadata({
