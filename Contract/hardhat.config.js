@@ -2,22 +2,6 @@ require("@nomicfoundation/hardhat-toolbox");
 require("@openzeppelin/hardhat-upgrades");
 require("hardhat-deploy");
 require("dotenv").config();
-
-/**
- * Hardhat Configuration — NexusRWA
- *
- * Networks:
- *   - hardhat    : Local in-memory network for fast unit tests
- *   - amoy       : Polygon Amoy testnet (primary deployment target)
- *   - polygon    : Polygon mainnet (production)
- *
- * Required .env variables:
- *   DEPLOYER_PRIVATE_KEY    — wallet that deploys contracts
- *   POLYGON_AMOY_RPC_URL    — e.g. from Alchemy or Infura
- *   POLYGONSCAN_API_KEY     — for contract verification
- */
-
-/** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
     version: "0.8.20",
@@ -26,23 +10,16 @@ module.exports = {
         enabled: true,
         runs: 200,
       },
-      viaIR: true, // Required for complex inheritance with multiple bases
+      viaIR: true,
     },
   },
-
   networks: {
-    // ── Local ──────────────────────────────────────────────────
     hardhat: {
       chainId: 31337,
       forking: {
-        // Optional: fork Polygon mainnet for live Chainlink feed tests
-        // url: process.env.POLYGON_MAINNET_RPC_URL,
-        // blockNumber: 55000000,
         enabled: false,
       },
     },
-
-    // ── Polygon Amoy Testnet ────────────────────────────────────
     amoy: {
       url: process.env.POLYGON_AMOY_RPC_URL || "https://rpc-amoy.polygon.technology",
       chainId: 80002,
@@ -51,8 +28,6 @@ module.exports = {
         : [],
       gasPrice: "auto",
     },
-
-    // ── Polygon Mainnet ─────────────────────────────────────────
     polygon: {
       url: process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-rpc.com",
       chainId: 137,
@@ -61,8 +36,6 @@ module.exports = {
         : [],
     },
   },
-
-  // ── Contract Verification ──────────────────────────────────────
   etherscan: {
     apiKey: {
       polygon:        process.env.POLYGONSCAN_API_KEY || "",
@@ -79,14 +52,10 @@ module.exports = {
       },
     ],
   },
-
-  // ── Hardhat Deploy ─────────────────────────────────────────────
   namedAccounts: {
     deployer: { default: 0 },
     kycManager: { default: 1 },
   },
-
-  // ── Gas Reporter (run with REPORT_GAS=true) ────────────────────
   gasReporter: {
     enabled:      process.env.REPORT_GAS === "true",
     currency:     "USD",
