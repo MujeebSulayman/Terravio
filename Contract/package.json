@@ -1,0 +1,29 @@
+{
+  "name": "nexusrwa",
+  "version": "0.1.0",
+  "description": "Multi-asset RWA tokenization protocol",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:gas": "REPORT_GAS=true hardhat test",
+    "deploy:local": "hardhat deploy --network hardhat",
+    "deploy:amoy": "hardhat deploy --network amoy --tags all",
+    "deploy:registry": "hardhat deploy --network amoy --tags registry",
+    "deploy:gold": "hardhat deploy --network amoy --tags gold",
+    "deploy:property": "hardhat deploy --network amoy --tags property",
+    "verify:amoy": "hardhat run scripts/verify.js --network amoy",
+    "clean": "hardhat clean"
+  },
+  "dependencies": {
+    "@chainlink/contracts": "^1.2.0",
+    "@openzeppelin/contracts": "^5.0.2",
+    "@openzeppelin/contracts-upgradeable": "^5.0.2"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/hardhat-upgrades": "^3.2.1",
+    "dotenv": "^16.4.5",
+    "hardhat": "^2.22.4",
+    "hardhat-deploy": "^0.12.4"
+  }
+}

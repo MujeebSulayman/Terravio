@@ -1,0 +1,9 @@
+# Ignore architectural reference folder
+Architect/
+
+# Local dependencies
+node_modules/
+
+# Misc
+.DS_Store
+.env
