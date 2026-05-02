@@ -4,7 +4,7 @@ require("hardhat-deploy");
 require("dotenv").config();
 module.exports = {
   solidity: {
-    version: "0.8.20",
+    version: "0.8.31",
     settings: {
       optimizer: {
         enabled: true,

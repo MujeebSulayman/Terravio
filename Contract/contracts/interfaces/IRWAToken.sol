@@ -1,4 +1,4 @@
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.31;
 import { RWALib } from "../libraries/RWALib.sol";
 interface IRWAToken {
     event ValuationUpdated(uint256 indexed oldValue, uint256 indexed newValue, uint64 timestamp);

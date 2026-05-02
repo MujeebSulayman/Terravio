@@ -1,4 +1,4 @@
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.31;
 import { RWALib } from "../libraries/RWALib.sol";
 interface IAssetRegistry {
     event ImplementationRegistered(RWALib.AssetType indexed assetType, address implementation);

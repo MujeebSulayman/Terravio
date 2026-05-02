@@ -1,4 +1,4 @@
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.31;
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 import { FunctionsClientUpgradeable } from "../core/FunctionsClientUpgradeable.sol";
 import { FunctionsRequest }           from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";

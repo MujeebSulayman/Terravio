@@ -1,5 +1,5 @@
 {
-  "name": "nexusrwa",
+  "name": "terravio",
   "version": "0.1.0",
   "description": "Multi-asset RWA tokenization protocol",
   "scripts": {
@@ -7,11 +7,11 @@
     "test": "hardhat test",
     "test:gas": "REPORT_GAS=true hardhat test",
     "deploy:local": "hardhat deploy --network hardhat",
-    "deploy:amoy": "hardhat deploy --network amoy --tags all",
-    "deploy:registry": "hardhat deploy --network amoy --tags registry",
-    "deploy:gold": "hardhat deploy --network amoy --tags gold",
-    "deploy:property": "hardhat deploy --network amoy --tags property",
-    "verify:amoy": "hardhat run scripts/verify.js --network amoy",
+    "deploy:baseSepolia": "hardhat deploy --network baseSepolia --tags all",
+    "deploy:registry": "hardhat deploy --network baseSepolia --tags registry",
+    "deploy:gold": "hardhat deploy --network baseSepolia --tags gold",
+    "deploy:property": "hardhat deploy --network baseSepolia --tags property",
+    "verify:baseSepolia": "hardhat run scripts/verify.js --network baseSepolia",
     "clean": "hardhat clean"
   },
   "dependencies": {
