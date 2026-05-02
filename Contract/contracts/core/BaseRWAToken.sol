@@ -4,7 +4,7 @@ import { ERC4626Upgradeable }          from "@openzeppelin/contracts-upgradeable
 import { EIP712Upgradeable }           from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import { OwnableUpgradeable }          from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { PausableUpgradeable }         from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import { ReentrancyGuardUpgradeable }  from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import { ReentrancyGuard }             from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { UUPSUpgradeable }             from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import { ECDSA }                        from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { IERC20 }                       from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
