@@ -7,6 +7,9 @@ const FUNCTIONS_ROUTERS = {
 const DON_IDS = {
   84532: ethers.encodeBytes32String("fun-base-sepolia-1"),
 };
+const USDC_ADDRESSES = {
+  84532: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+};
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { save, get, log } = deployments;
   const { deployer, kycManager } = await getNamedAccounts();
@@ -21,9 +24,10 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
     "../chainlink-functions/fetchPropertyValuation.js"
   );
   const functionsSource = fs.readFileSync(jsSourcePath, "utf8");
+
   const registryDeployment = await get("AssetRegistry");
   const registry = await ethers.getContractAt("AssetRegistry", registryDeployment.address);
-  const usdcDeployment = await get("MockUSDC").catch(() => ({ address: ethers.ZeroAddress }));
+
   const PropertyToken = await ethers.getContractFactory("PropertyToken");
   const propImpl = await PropertyToken.deploy();
   await propImpl.waitForDeployment();
@@ -33,7 +37,7 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const tx1 = await registry.registerImplementation(ASSET_TYPE_REAL_ESTATE, implAddress);
   await tx1.wait();
   const initData = PropertyToken.interface.encodeFunctionData("initialize", [
-    usdcDeployment.address,
+    USDC_ADDRESSES[chainId],
     FUNCTIONS_ROUTERS[chainId],
     BigInt(subscriptionId || 0),
     DON_IDS[chainId],
