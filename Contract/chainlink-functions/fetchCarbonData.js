@@ -20,7 +20,6 @@ let pricePerTonneUSD = 14.0;
 if (!climateResponse.error && climateResponse.data?.data?.pair?.token1Price) {
   pricePerTonneUSD = parseFloat(climateResponse.data.data.pair.token1Price);
 }
-// TODO: Replace with actual backend API when ready
 // const statusResponse = await Functions.makeHttpRequest({
 //   url: `https://api.terravio.com/carbon/${carbonTokenId}/status`,
 //   headers: {

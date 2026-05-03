@@ -1,0 +1,9 @@
+{
+  "network": "baseSepolia",
+  "chainId": 84532,
+  "AssetRegistry": "0xDE119c8Aa9b0B3cD2c704AA866B9a7eED5233571",
+  "GoldToken": "0xB5b3470F502DBFa709bCd4ad0C2a250ff8D49986",
+  "PropertyToken": "0x2Fd4B60Cad1d75438C34F3ED134BE3480fda931B",
+  "CarbonToken": "0x0777694b6999F01eA277A430Ad10d224005F7C19",
+  "timestamp": "2026-05-03T14:33:57.235Z"
+}
