@@ -23,7 +23,7 @@ if (!climateResponse.error && climateResponse.data?.data?.pair?.token1Price) {
 const statusResponse = await Functions.makeHttpRequest({
   url: `https://api.nexusrwa.com/carbon/${carbonTokenId}/status`,
   headers: {
-    "Authorization": `Bearer ${secrets.NEXUSRWA_API_KEY}`,
+    "Authorization": `Bearer ${secrets.TERRAVIO_API_KEY}`,
     "Content-Type": "application/json",
   },
   method: "GET",
