@@ -122,6 +122,26 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   await save("CarbonToken", { address: carbClone, abi: CarbonToken.interface.formatJson() });
 
   log("All assets successfully deployed and registered.");
+
+  // Save all addresses to a single JSON file
+  const deploymentData = {
+    network: network.name,
+    chainId: chainId,
+    AssetRegistry: registryAddress,
+    GoldToken: goldClone,
+    PropertyToken: propClone,
+    CarbonToken: carbClone,
+    timestamp: new Date().toISOString()
+  };
+
+  const dirPath = path.join(__dirname, "../deployment-output");
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+
+  const filePath = path.join(dirPath, `${network.name}_addresses.json`);
+  fs.writeFileSync(filePath, JSON.stringify(deploymentData, null, 2));
+  log(`Deployment addresses saved to ${filePath}`);
 };
 
 module.exports.tags = ["all"];

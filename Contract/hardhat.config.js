@@ -43,11 +43,5 @@ module.exports = {
   namedAccounts: {
     deployer: { default: 0 },
     kycManager: { default: 1 },
-  },
-  gasReporter: {
-    enabled: process.env.REPORT_GAS === "true",
-    currency: "USD",
-    coinmarketcap: process.env.CMC_API_KEY,
-    token: "ETH",
-  },
+  }
 };
