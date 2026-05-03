@@ -25,9 +25,7 @@ library RWALib {
     struct WhitelistApproval {
         address investor;
         uint256 deadline;
-        uint8 v;
-        bytes32 r;
-        bytes32 s;
+        bytes signature;
     }
     error NotWhitelisted(address caller);
     error SignatureExpired(uint256 deadline, uint256 blockTimestamp);

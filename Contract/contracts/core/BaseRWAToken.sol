@@ -6,7 +6,8 @@ import { OwnableUpgradeable }          from "@openzeppelin/contracts-upgradeable
 import { PausableUpgradeable }         from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import { ReentrancyGuardUpgradeable }  from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import { UUPSUpgradeable }             from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import { ECDSA }                        from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import { SignatureChecker }         from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
+import { ECDSA }                    from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { IERC20 }                       from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IERC20Metadata }               from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import { IRWAToken }  from "../interfaces/IRWAToken.sol";
@@ -105,18 +106,31 @@ abstract contract BaseRWAToken is
     {
         if (block.timestamp > approval.deadline)
             revert RWALib.SignatureExpired(approval.deadline, block.timestamp);
+
         bytes32 structHash = keccak256(
             abi.encode(RWALib.WHITELIST_TYPEHASH, approval.investor, approval.deadline)
         );
         bytes32 digest = _hashTypedDataV4(structHash);
-        address signer = digest.recover(approval.v, approval.r, approval.s);
-        if (signer != kycManager) revert RWALib.InvalidSignature();
+        
+        bool isValid = SignatureChecker.isValidSignatureNow(
+            kycManager,
+            digest,
+            approval.signature
+        );
+        
+        if (!isValid) revert RWALib.InvalidSignature();
+
         _whitelist[approval.investor] = true;
         emit InvestorWhitelisted(approval.investor);
     }
     function removeFromWhitelist(address investor) external override onlyOwner {
         _whitelist[investor] = false;
         emit InvestorRemovedFromWhitelist(investor);
+    }
+
+    function setKycManager(address newManager) external onlyOwner {
+        if (newManager == address(0)) revert RWALib.ZeroAddress();
+        kycManager = newManager;
     }
     function claimYield() external override nonReentrant updateReward(msg.sender) {
         uint256 reward = rewards[msg.sender];
