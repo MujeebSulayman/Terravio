@@ -1,9 +1,10 @@
 pragma solidity ^0.8.31;
-import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
-import { FunctionsClientUpgradeable } from "../core/FunctionsClientUpgradeable.sol";
-import { FunctionsRequest }           from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
-import { BaseRWAToken }               from "../core/BaseRWAToken.sol";
-import { RWALib }                    from "../libraries/RWALib.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {FunctionsClientUpgradeable} from "../core/FunctionsClientUpgradeable.sol";
+import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
+import {BaseRWAToken} from "../core/BaseRWAToken.sol";
+import {RWALib} from "../libraries/RWALib.sol";
+
 contract CarbonToken is BaseRWAToken, FunctionsClientUpgradeable {
     using FunctionsRequest for FunctionsRequest.Request;
     using Strings for uint256;
@@ -19,6 +20,7 @@ contract CarbonToken is BaseRWAToken, FunctionsClientUpgradeable {
     event ValuationFulfilled(bytes32 indexed requestId, uint256 valuation);
     event FunctionsError(bytes32 indexed requestId, bytes err);
     error UnexpectedRequestId(bytes32 expected, bytes32 received);
+
     function initialize(
         address asset_,
         address functionsRouter_,
@@ -46,17 +48,18 @@ contract CarbonToken is BaseRWAToken, FunctionsClientUpgradeable {
             admin_
         );
         __FunctionsClient_init(functionsRouter_);
-        subscriptionId   = subscriptionId_;
-        donId            = donId_;
+        subscriptionId = subscriptionId_;
+        donId = donId_;
         callbackGasLimit = callbackGasLimit_ == 0 ? 300_000 : callbackGasLimit_;
-        carbonTokenId    = carbonTokenId_;
-        quantityTonnes   = quantityTonnes_;
-        functionsSource  = functionsSource_;
+        carbonTokenId = carbonTokenId_;
+        quantityTonnes = quantityTonnes_;
+        functionsSource = functionsSource_;
         if (initialValuation_ > 0) {
             _updateValuation(initialValuation_);
         }
     }
-    function requestValuationUpdate() external onlyOwner {
+
+    function requestValuationUpdate() external onlyRole(ORACLE_ROLE) {
         if (requestPending) revert RWALib.RequestPending(pendingRequestId);
         if (
             _metadata.lastUpdated > 0 &&
@@ -77,9 +80,10 @@ contract CarbonToken is BaseRWAToken, FunctionsClientUpgradeable {
             donId
         );
         pendingRequestId = requestId;
-        requestPending   = true;
+        requestPending = true;
         emit ValuationRequested(requestId);
     }
+
     function fulfillRequest(
         bytes32 requestId,
         bytes memory response,
@@ -94,18 +98,28 @@ contract CarbonToken is BaseRWAToken, FunctionsClientUpgradeable {
             return;
         }
         uint256 totalValuationCents = abi.decode(response, (uint256));
-        uint256 totalValuationUSD18 = totalValuationCents * 1e16;
+        uint256 totalValuationUSD18 = totalValuationCents * RWALib.CENTS_TO_WAD;
         _updateValuation(totalValuationUSD18);
         emit ValuationFulfilled(requestId, totalValuationUSD18);
     }
-    function updateFunctionsSource(string calldata newSource) external onlyOwner {
+
+    function updateFunctionsSource(
+        string calldata newSource
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         functionsSource = newSource;
     }
-    function updateCarbonDetails(string calldata newTokenId, uint256 newQuantity) external onlyOwner {
+
+    function updateCarbonDetails(
+        string calldata newTokenId,
+        uint256 newQuantity
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         carbonTokenId = newTokenId;
         quantityTonnes = newQuantity;
     }
-    function setFunctionsRouter(address newRouter) external onlyOwner {
+
+    function setFunctionsRouter(
+        address newRouter
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _setFunctionsRouter(newRouter);
     }
 }

@@ -44,14 +44,14 @@ contract PropertyToken is BaseRWAToken, FunctionsClientUpgradeable {
         __FunctionsClient_init(functionsRouter_);
         subscriptionId   = subscriptionId_;
         donId            = donId_;
-        callbackGasLimit = callbackGasLimit_ == 0 ? 300_000 : callbackGasLimit_;
+        callbackGasLimit = callbackGasLimit_ == 0 ? RWALib.DEFAULT_CALLBACK_GAS_LIMIT : callbackGasLimit_;
         propertyId       = propertyId_;
         functionsSource  = functionsSource_;
         if (initialValuation_ > 0) {
             _updateValuation(initialValuation_);
         }
     }
-    function requestValuationUpdate() external onlyOwner {
+    function requestValuationUpdate() external onlyRole(ORACLE_ROLE) {
         if (requestPending) revert RWALib.RequestPending(pendingRequestId);
         if (
             _metadata.lastUpdated > 0 &&
@@ -88,23 +88,23 @@ contract PropertyToken is BaseRWAToken, FunctionsClientUpgradeable {
             return;
         }
         uint256 valuationCents = abi.decode(response, (uint256));
-        uint256 valuationUSD18 = valuationCents * 1e16;
+        uint256 valuationUSD18 = valuationCents * RWALib.CENTS_TO_WAD;
         _updateValuation(valuationUSD18);
         emit ValuationFulfilled(requestId, valuationUSD18);
     }
-    function updateFunctionsSource(string calldata newSource) external onlyOwner {
+    function updateFunctionsSource(string calldata newSource) external onlyRole(DEFAULT_ADMIN_ROLE) {
         functionsSource = newSource;
     }
-    function updateSubscriptionId(uint64 newSubId) external onlyOwner {
+    function updateSubscriptionId(uint64 newSubId) external onlyRole(DEFAULT_ADMIN_ROLE) {
         subscriptionId = newSubId;
     }
-    function updateCallbackGasLimit(uint32 newLimit) external onlyOwner {
+    function updateCallbackGasLimit(uint32 newLimit) external onlyRole(DEFAULT_ADMIN_ROLE) {
         callbackGasLimit = newLimit;
     }
-    function updatePropertyId(string calldata newPropertyId) external onlyOwner {
+    function updatePropertyId(string calldata newPropertyId) external onlyRole(DEFAULT_ADMIN_ROLE) {
         propertyId = newPropertyId;
     }
-    function setFunctionsRouter(address newRouter) external onlyOwner {
+    function setFunctionsRouter(address newRouter) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _setFunctionsRouter(newRouter);
     }
 }
