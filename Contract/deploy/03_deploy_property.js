@@ -3,12 +3,12 @@ const fs = require("fs");
 const path = require("path");
 const FUNCTIONS_ROUTERS = {
   137:   "0xdc2AAF042Aeff2E68B3e8E33F19e4B9fA7C73D10",
-  80002: "0xf9B8d898172181729416Ab6C8974d3b49C10BA72",
+  84532: "0xf9B8d898172181729416Ab6C8974d3b49C10BA72", // Base Sepolia
   31337: "0x0000000000000000000000000000000000000000",
 };
 const DON_IDS = {
   137:   ethers.encodeBytes32String("fun-polygon-mainnet-1"),
-  80002: ethers.encodeBytes32String("fun-base-sepolia-1"),
+  84532: ethers.encodeBytes32String("fun-base-sepolia-1"),
   31337: ethers.encodeBytes32String("fun-hardhat-1"),
 };
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
@@ -43,7 +43,7 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
     FUNCTIONS_ROUTERS[chainId],
     BigInt(subscriptionId || 0),
     DON_IDS[chainId],
-    300_000,
+    0, // Use default gas limit (300,000) from RWALib
     "5500-Grand-Central-Pkwy-W-Garden-City-NY",
     functionsSource,
     ethers.parseUnits("500000", 18),
