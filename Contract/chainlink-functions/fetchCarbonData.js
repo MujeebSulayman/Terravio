@@ -20,19 +20,27 @@ let pricePerTonneUSD = 14.0;
 if (!climateResponse.error && climateResponse.data?.data?.pair?.token1Price) {
   pricePerTonneUSD = parseFloat(climateResponse.data.data.pair.token1Price);
 }
-const statusResponse = await Functions.makeHttpRequest({
-  url: `https://api.nexusrwa.com/carbon/${carbonTokenId}/status`,
-  headers: {
-    "Authorization": `Bearer ${secrets.TERRAVIO_API_KEY}`,
-    "Content-Type": "application/json",
-  },
-  method: "GET",
-  timeout: 9000,
-});
-if (statusResponse.error) {
-  throw Error(`Backend API error: ${statusResponse.error}`);
-}
-const creditData = statusResponse.data;
+// TODO: Replace with actual backend API when ready
+// const statusResponse = await Functions.makeHttpRequest({
+//   url: `https://api.terravio.com/carbon/${carbonTokenId}/status`,
+//   headers: {
+//     "Authorization": `Bearer ${secrets.TERRAVIO_API_KEY}`,
+//     "Content-Type": "application/json",
+//   },
+//   method: "GET",
+//   timeout: 9000,
+// });
+// if (statusResponse.error) {
+//   throw Error(`Backend API error: ${statusResponse.error}`);
+// }
+// const creditData = statusResponse.data;
+
+// Mock data for development
+const creditData = {
+  status: "ACTIVE",
+  quantity: quantityTonnes
+};
+
 if (creditData.status !== "ACTIVE") {
   return Functions.encodeUint256(0);
 }

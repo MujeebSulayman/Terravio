@@ -42,6 +42,6 @@ module.exports = {
   },
   namedAccounts: {
     deployer: { default: 0 },
-    kycManager: { default: 1 },
+    kycManager: { default: 1, 84532: 0, baseSepolia: 0 },
   }
 };
