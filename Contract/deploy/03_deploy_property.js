@@ -2,23 +2,19 @@ const { ethers } = require("hardhat");
 const fs = require("fs");
 const path = require("path");
 const FUNCTIONS_ROUTERS = {
-  84532: "0xf9B8d898172181729416Ab6C8974d3b49C10BA72", // Base Sepolia
-  31337: "0x0000000000000000000000000000000000000000",
+  84532: "0xf9B8d898172181729416Ab6C8974d3b49C10BA72",
 };
 const DON_IDS = {
   84532: ethers.encodeBytes32String("fun-base-sepolia-1"),
-  31337: ethers.encodeBytes32String("fun-hardhat-1"),
 };
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { save, get, log } = deployments;
   const { deployer, kycManager } = await getNamedAccounts();
   const chainId = network.config.chainId;
-  log("─────────────────────────────────────");
-  log("Deploying PropertyToken");
-  log("─────────────────────────────────────");
+  log(`Deploying PropertyToken on ${network.name}...`);
   const subscriptionId = process.env.CHAINLINK_SUBSCRIPTION_ID;
   if (!subscriptionId) {
-    log("⚠️  CHAINLINK_SUBSCRIPTION_ID not set — using 0 (update after deploy)");
+    log("Warning: CHAINLINK_SUBSCRIPTION_ID not set");
   }
   const jsSourcePath = path.join(
     __dirname,
@@ -54,14 +50,9 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const receipt = await tx2.wait();
   const event = receipt.logs.find((l) => l.fragment?.name === "AssetDeployed");
   const cloneAddress = event?.args?.tokenAddress;
-  log(`PropertyToken Clone: ${cloneAddress}`);
-  log(`Asset ID:            ${event?.args?.assetId}`);
+  log(`PropertyToken deployed: ${cloneAddress}`);
   log("");
-  log("Next steps:");
-  log("  1. Add clone as Chainlink Functions consumer in your subscription");
-  log("     https://functions.chain.link");
-  log("  2. Upload encrypted secrets (RealtyMole API key) to the DON");
-  log("  3. Call requestValuationUpdate() to trigger first oracle fetch");
+  log("Note: Add consumer to subscription and upload secrets before requesting valuation updates.");
   await save("PropertyToken", {
     address: cloneAddress,
     abi: PropertyToken.interface.formatJson(),

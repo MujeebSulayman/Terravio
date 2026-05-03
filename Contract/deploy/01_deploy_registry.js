@@ -2,10 +2,8 @@ const { ethers, upgrades } = require("hardhat");
 module.exports = async function ({ getNamedAccounts, deployments }) {
   const { save, log } = deployments;
   const { deployer } = await getNamedAccounts();
-  log("─────────────────────────────────────");
-  log("Deploying AssetRegistry (UUPS Proxy)");
+  log("Deploying AssetRegistry Proxy...");
   log(`Deployer: ${deployer}`);
-  log("─────────────────────────────────────");
   const AssetRegistry = await ethers.getContractFactory("AssetRegistry");
   const registry = await upgrades.deployProxy(
     AssetRegistry,
@@ -18,8 +16,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   await registry.waitForDeployment();
   const proxyAddress = await registry.getAddress();
   const implAddress  = await upgrades.erc1967.getImplementationAddress(proxyAddress);
-  log(`AssetRegistry Proxy:          ${proxyAddress}`);
-  log(`AssetRegistry Implementation: ${implAddress}`);
+  log(`AssetRegistry: ${proxyAddress}`);
   await save("AssetRegistry", {
     address: proxyAddress,
     abi: AssetRegistry.interface.formatJson(),
