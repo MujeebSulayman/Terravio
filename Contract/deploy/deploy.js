@@ -4,15 +4,15 @@ const path = require("path");
 
 const CONFIG = {
   84532: {
-    usdc: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-    goldPriceFeed: "0xa877c413b0A78a6321287c2B3C2A9678120e5E53",
-    functionsRouter: "0xf9B8d898172181729416Ab6C8974d3b49C10BA72",
-    donId: "0x66756e2d626173652d7365706f6c69612d310000000000000000000000000000",
+    usdc: process.env.USDC_ADDRESS || "",
+    goldPriceFeed: process.env.GOLD_PRICE_FEED || "",
+    functionsRouter: process.env.CHAINLINK_FUNCTIONS_ROUTER || "",
+    donId: process.env.CHAINLINK_DON_ID || "",
   },
   31337: {
-    usdc: "0x0000000000000000000000000000000000000000",
-    goldPriceFeed: "0x0000000000000000000000000000000000000000",
-    functionsRouter: "0x0000000000000000000000000000000000000000",
+    usdc: ethers.ZeroAddress,
+    goldPriceFeed: ethers.ZeroAddress,
+    functionsRouter: ethers.ZeroAddress,
     donId: "0x0000000000000000000000000000000000000000",
   }
 };
