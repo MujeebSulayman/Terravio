@@ -7,10 +7,7 @@
     "test": "hardhat test",
     "test:gas": "REPORT_GAS=true hardhat test",
     "deploy:local": "hardhat deploy --network hardhat",
-    "deploy:baseSepolia": "hardhat deploy --network baseSepolia --tags all",
-    "deploy:registry": "hardhat deploy --network baseSepolia --tags registry",
-    "deploy:gold": "hardhat deploy --network baseSepolia --tags gold",
-    "deploy:property": "hardhat deploy --network baseSepolia --tags property",
+    "deploy:baseSepolia": "hardhat deploy --network baseSepolia",
     "verify:baseSepolia": "hardhat run scripts/verify.js --network baseSepolia",
     "clean": "hardhat clean"
   },
