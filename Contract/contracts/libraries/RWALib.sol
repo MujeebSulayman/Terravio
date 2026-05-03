@@ -36,9 +36,21 @@ library RWALib {
     error ZeroAddress();
     error ZeroAmount();
     error RequestPending(bytes32 requestId);
+    error AssetAlreadyActive();
+    error InitializationFailed();
     uint256 internal constant BPS_DENOMINATOR = 10_000;
     uint64 internal constant MIN_UPDATE_INTERVAL = 1 hours;
     uint256 internal constant MAX_ORACLE_STALENESS = 25 hours;
     bytes32 internal constant WHITELIST_TYPEHASH =
         keccak256("WhitelistApproval(address investor,uint256 deadline)");
+    uint32 internal constant DEFAULT_CALLBACK_GAS_LIMIT = 300_000;
+    uint256 internal constant PRECISION = 1e18;
+    uint256 internal constant CHAINLINK_TO_WAD = 1e10;
+    uint256 internal constant CENTS_TO_WAD = 1e16;
+    string internal constant PROTOCOL_VERSION = "1";
+
+    error DeploymentFailed();
+    error AssetNotFound(uint256 assetId);
+    error InvalidPrice(int256 price);
+    error StalePrice(uint256 updatedAt);
 }

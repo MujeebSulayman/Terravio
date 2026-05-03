@@ -1,23 +1,16 @@
 const { ethers } = require("hardhat");
 const { RWALib_AssetType } = require("../scripts/constants");
 const PRICE_FEEDS = {
-  137:   "0x0C466540B2ee1a31b441671eac0ca886e051E410",
-  80002: "0x0000000000000000000000000000000000000000",
-  31337: "0x0000000000000000000000000000000000000000",
+  84532: "0xa877c413b0A78a6321287c2B3C2A9678120e5E53",
 };
 const USDC_ADDRESSES = {
-  137:   "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
-  80002: "0x0000000000000000000000000000000000000000",
-  31337: "0x0000000000000000000000000000000000000000",
+  84532: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
 };
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { save, get, log } = deployments;
   const { deployer, kycManager } = await getNamedAccounts();
   const chainId = network.config.chainId;
-  log("─────────────────────────────────────");
-  log("Deploying GoldToken");
-  log(`Network: ${network.name} (chainId: ${chainId})`);
-  log("─────────────────────────────────────");
+  log(`Deploying GoldToken on ${network.name}...`);
   const registryDeployment = await get("AssetRegistry");
   const registry = await ethers.getContractAt("AssetRegistry", registryDeployment.address);
   const GoldToken = await ethers.getContractFactory("GoldToken");
@@ -28,11 +21,11 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const ASSET_TYPE_GOLD = 0;
   const tx1 = await registry.registerImplementation(ASSET_TYPE_GOLD, implAddress);
   await tx1.wait();
-  log("Registered GoldToken implementation");
+  log("GoldToken implementation registered");
   const priceFeedAddress = PRICE_FEEDS[chainId];
   const usdcAddress      = USDC_ADDRESSES[chainId];
-  if (priceFeedAddress === "0x000...") {
-    log("⚠️  WARNING: Using zero address for price feed — deploy a MockAggregator first");
+  if (priceFeedAddress === ethers.ZeroAddress) {
+    log("Warning: Price feed address is zero");
   }
   const initData = GoldToken.interface.encodeFunctionData("initialize", [
     usdcAddress,
@@ -49,8 +42,7 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
     (log) => log.fragment?.name === "AssetDeployed"
   );
   const cloneAddress = event?.args?.tokenAddress;
-  log(`GoldToken Clone (active): ${cloneAddress}`);
-  log(`Asset ID in Registry:     ${event?.args?.assetId}`);
+  log(`GoldToken deployed: ${cloneAddress}`);
   await save("GoldToken", {
     address: cloneAddress,
     abi: GoldToken.interface.formatJson(),

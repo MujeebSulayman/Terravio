@@ -2,7 +2,7 @@ pragma solidity ^0.8.31;
 import { ERC20Upgradeable }            from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import { ERC4626Upgradeable }          from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC4626Upgradeable.sol";
 import { EIP712Upgradeable }           from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
-import { OwnableUpgradeable }          from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import { AccessControlUpgradeable }   from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import { PausableUpgradeable }         from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import { ReentrancyGuardUpgradeable }  from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import { UUPSUpgradeable }             from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -18,7 +18,7 @@ abstract contract BaseRWAToken is
     ERC20Upgradeable,
     ERC4626Upgradeable,
     EIP712Upgradeable,
-    OwnableUpgradeable,
+    AccessControlUpgradeable,
     PausableUpgradeable,
     ReentrancyGuardUpgradeable,
     UUPSUpgradeable
@@ -31,9 +31,10 @@ abstract contract BaseRWAToken is
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
     uint256 public totalYieldDeposited;
-    bytes32 public constant ORACLE_ROLE  = keccak256("ORACLE_ROLE");
-    bytes32 public constant MINTER_ROLE  = keccak256("MINTER_ROLE");
-    bytes32 public constant PAUSER_ROLE  = keccak256("PAUSER_ROLE");
+    bytes32 public constant ORACLE_ROLE        = keccak256("ORACLE_ROLE");
+    bytes32 public constant MINTER_ROLE        = keccak256("MINTER_ROLE");
+    bytes32 public constant PAUSER_ROLE        = keccak256("PAUSER_ROLE");
+    bytes32 public constant YIELD_MANAGER_ROLE = keccak256("YIELD_MANAGER_ROLE");
     modifier onlyWhitelisted(address account) {
         if (!_whitelist[account]) revert RWALib.NotWhitelisted(account);
         _;
@@ -58,13 +59,20 @@ abstract contract BaseRWAToken is
     ) internal onlyInitializing {
         if (asset_ == address(0) || kycManager_ == address(0) || admin_ == address(0))
             revert RWALib.ZeroAddress();
-        __EIP712_init(name_, "1");
+        __EIP712_init(name_, RWALib.PROTOCOL_VERSION);
         __ERC20_init(name_, symbol_);
         __ERC4626_init(IERC20(asset_));
-        __Ownable_init(admin_);
+        __AccessControl_init();
         __Pausable_init();
         __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
+
+        _grantRole(DEFAULT_ADMIN_ROLE, admin_);
+        _grantRole(MINTER_ROLE, admin_);
+        _grantRole(PAUSER_ROLE, admin_);
+        _grantRole(YIELD_MANAGER_ROLE, admin_);
+        _grantRole(ORACLE_ROLE, admin_);
+        
         kycManager = kycManager_;
         _metadata = RWALib.AssetMetadata({
             assetType:    assetType_,
@@ -97,7 +105,7 @@ abstract contract BaseRWAToken is
     function claimableYield(address investor) public view override returns (uint256) {
         return
             (balanceOf(investor) * (_rewardPerToken() - userRewardPerTokenPaid[investor])) /
-            1e18 +
+            RWALib.PRECISION +
             rewards[investor];
     }
     function whitelistInvestor(RWALib.WhitelistApproval calldata approval)
@@ -123,15 +131,27 @@ abstract contract BaseRWAToken is
         _whitelist[approval.investor] = true;
         emit InvestorWhitelisted(approval.investor);
     }
-    function removeFromWhitelist(address investor) external override onlyOwner {
+    function removeFromWhitelist(address investor) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         _whitelist[investor] = false;
         emit InvestorRemovedFromWhitelist(investor);
     }
 
-    function setKycManager(address newManager) external onlyOwner {
+    function batchWhitelist(address[] calldata investors) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        for (uint256 i = 0; i < investors.length; i++) {
+            _whitelist[investors[i]] = true;
+            emit InvestorWhitelisted(investors[i]);
+        }
+    }
+
+    function setKycManager(address newManager) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (newManager == address(0)) revert RWALib.ZeroAddress();
         kycManager = newManager;
     }
+
+    function rescueERC20(address token, uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        IERC20(token).transfer(msg.sender, amount);
+    }
+
     function claimYield() external override nonReentrant updateReward(msg.sender) {
         uint256 reward = rewards[msg.sender];
         if (reward == 0) revert RWALib.ZeroAmount();
@@ -139,17 +159,18 @@ abstract contract BaseRWAToken is
         IERC20(asset()).transfer(msg.sender, reward);
         emit YieldClaimed(msg.sender, reward);
     }
-    function updateIPFSCID(string calldata newCID) external override onlyOwner {
+
+    function updateIPFSCID(string calldata newCID) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         _metadata.ipfsCID = newCID;
     }
-    function depositYield(uint256 amount) external onlyOwner updateReward(address(0)) {
+    function depositYield(uint256 amount) external onlyRole(YIELD_MANAGER_ROLE) updateReward(address(0)) {
         if (amount == 0) revert RWALib.ZeroAmount();
         if (totalSupply() == 0) revert RWALib.ZeroAmount();
         IERC20(asset()).transferFrom(msg.sender, address(this), amount);
         totalYieldDeposited += amount;
-        rewardPerTokenStored += (amount * 1e18) / totalSupply();
+        rewardPerTokenStored += (amount * RWALib.PRECISION) / totalSupply();
     }
-    function setYieldRate(uint256 newYieldBPS) external onlyOwner {
+    function setYieldRate(uint256 newYieldBPS) external onlyRole(DEFAULT_ADMIN_ROLE) {
         emit YieldRateUpdated(_metadata.yieldBPS, newYieldBPS);
         _metadata.yieldBPS = newYieldBPS;
     }
@@ -180,8 +201,8 @@ abstract contract BaseRWAToken is
         if (from == address(0)) _metadata.totalIssuance += amount;
         if (to == address(0))   _metadata.totalIssuance -= amount;
     }
-    function pause()   external onlyOwner { _pause(); }
-    function unpause() external onlyOwner { _unpause(); }
+    function pause()   external onlyRole(PAUSER_ROLE) { _pause(); }
+    function unpause() external onlyRole(PAUSER_ROLE) { _unpause(); }
     function deposit(uint256 assets, address receiver)
         public override whenNotPaused onlyWhitelisted(receiver) returns (uint256)
     {
@@ -197,12 +218,12 @@ abstract contract BaseRWAToken is
     {
         return super.withdraw(assets, receiver, owner_);
     }
-    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+    function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
     function _rewardPerToken() internal view returns (uint256) {
         return rewardPerTokenStored;
     }
-    function supportsInterface(bytes4 interfaceId) public view virtual returns (bool) {
-        return interfaceId == type(IRWAToken).interfaceId;
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControlUpgradeable) returns (bool) {
+        return interfaceId == type(IRWAToken).interfaceId || super.supportsInterface(interfaceId);
     }
     function decimals()
         public pure override(ERC20Upgradeable, ERC4626Upgradeable, IERC20Metadata)

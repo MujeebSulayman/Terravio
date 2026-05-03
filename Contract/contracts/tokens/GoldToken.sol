@@ -40,12 +40,10 @@ contract GoldToken is BaseRWAToken {
             ,
             uint256 updatedAt,
         ) = priceFeed.latestRoundData();
-        require(answer > 0, "GoldToken: invalid price");
-        require(
-            block.timestamp - updatedAt <= RWALib.MAX_ORACLE_STALENESS,
-            "GoldToken: stale price"
-        );
-        priceUSD = uint256(answer) * 1e10;
+        if (answer <= 0) revert RWALib.InvalidPrice(answer);
+        if (block.timestamp - updatedAt > RWALib.MAX_ORACLE_STALENESS)
+            revert RWALib.StalePrice(updatedAt);
+        priceUSD = uint256(answer) * RWALib.CHAINLINK_TO_WAD;
         roundId  = _roundId;
     }
     function _syncFromChainlink() internal {
@@ -58,12 +56,12 @@ contract GoldToken is BaseRWAToken {
         if (answer <= 0) revert RWALib.InvalidValuation(0);
         if (block.timestamp - updatedAt > RWALib.MAX_ORACLE_STALENESS)
             revert RWALib.InvalidValuation(uint256(answer));
-        uint256 pricePerGram18 = uint256(answer) * 1e10;
-        uint256 totalValuation = (pricePerGram18 * totalGoldGrams) / 1e18;
+        uint256 pricePerGram18 = uint256(answer) * RWALib.CHAINLINK_TO_WAD;
+        uint256 totalValuation = (pricePerGram18 * totalGoldGrams) / RWALib.PRECISION;
         _updateValuation(totalValuation);
         emit GoldPriceSynced(pricePerGram18, totalValuation, roundId);
     }
-    function updatePriceFeed(address newFeed) external onlyOwner {
+    function updatePriceFeed(address newFeed) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (newFeed == address(0)) revert RWALib.ZeroAddress();
         priceFeed = AggregatorV3Interface(newFeed);
     }

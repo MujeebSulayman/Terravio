@@ -50,7 +50,7 @@ contract AssetRegistry is Initializable, AccessControlUpgradeable, UUPSUpgradeab
         if (impl == address(0)) revert RWALib.ZeroAddress();
         clone = impl.clone();
         (bool success, ) = clone.call(initData);
-        require(success, "AssetRegistry: init failed");
+        if (!success) revert RWALib.InitializationFailed();
         assetId = ++totalAssets;
         assets[assetId] = AssetRecord({
             tokenAddress: clone,
@@ -64,7 +64,7 @@ contract AssetRegistry is Initializable, AccessControlUpgradeable, UUPSUpgradeab
     }
     function deactivateAsset(uint256 assetId) external onlyRole(ASSET_MANAGER_ROLE) {
         AssetRecord storage record = assets[assetId];
-        require(record.tokenAddress != address(0), "AssetRegistry: not found");
+        if (record.tokenAddress == address(0)) revert RWALib.AssetNotFound(assetId);
         record.active = false;
         emit AssetDeactivated(assetId, record.tokenAddress);
     }
