@@ -2,12 +2,10 @@ const { ethers } = require("hardhat");
 const fs = require("fs");
 const path = require("path");
 const FUNCTIONS_ROUTERS = {
-  137:   "0xdc2AAF042Aeff2E68B3e8E33F19e4B9fA7C73D10",
   84532: "0xf9B8d898172181729416Ab6C8974d3b49C10BA72", // Base Sepolia
   31337: "0x0000000000000000000000000000000000000000",
 };
 const DON_IDS = {
-  137:   ethers.encodeBytes32String("fun-polygon-mainnet-1"),
   84532: ethers.encodeBytes32String("fun-base-sepolia-1"),
   31337: ethers.encodeBytes32String("fun-hardhat-1"),
 };
