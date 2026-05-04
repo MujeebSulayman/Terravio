@@ -27,6 +27,8 @@ const envSchema = z.object({
     ),
 
   TERRAVIO_API_KEY: z.preprocess(emptyToUndef, z.string().min(1).optional()),
+  /** RentCast server-side key for property valuation lookups. */
+  RENTCAST_API_KEY: z.preprocess(emptyToUndef, z.string().min(1).optional()),
   PRIVY_APP_ID: z.preprocess(emptyToUndef, z.string().optional()),
   PRIVY_APP_SECRET: z.preprocess(emptyToUndef, z.string().optional()),
   /** Override default `https://api.privy.io` (JWKS + REST). */
