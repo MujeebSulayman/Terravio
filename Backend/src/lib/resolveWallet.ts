@@ -1,23 +1,14 @@
-import type { User } from "@privy-io/server-auth";
+import type { User } from "@privy-io/node";
 
 /**
- * Prefer Privy's primary linked wallet; fall back to first ethereum wallet in linkedAccounts.
+ * Prefer smart wallet, then first Ethereum-linked wallet (`@privy-io/node` user shape).
  */
 export function resolveWalletAddress(user: User): string | null {
-  const direct = user.wallet?.address;
-  if (direct) return direct;
-
-  const smart = user.smartWallet?.address;
-  if (smart) return smart;
-
-  for (const acc of user.linkedAccounts ?? []) {
-    if (acc.type === "wallet" && acc.chainType === "ethereum") {
-      return acc.address;
-    }
-    if (acc.type === "smart_wallet") {
-      return acc.address;
-    }
+  for (const acc of user.linked_accounts) {
+    if (acc.type === "smart_wallet") return acc.address;
   }
-
+  for (const acc of user.linked_accounts) {
+    if (acc.type === "wallet" && acc.chain_type === "ethereum") return acc.address;
+  }
   return null;
 }
