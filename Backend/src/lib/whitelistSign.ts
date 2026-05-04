@@ -1,12 +1,12 @@
 import { ethers } from "ethers";
 import type { RwaTokenConfig } from "./rwaTokens";
 
-const WHITELIST_TYPES = {
+const WHITELIST_TYPES: Record<string, { name: string; type: string }[]> = {
   WhitelistApproval: [
     { name: "investor", type: "address" },
     { name: "deadline", type: "uint256" },
   ],
-} as const;
+};
 
 export function buildWhitelistDomain(token: RwaTokenConfig, chainId: number) {
   return {
