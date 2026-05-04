@@ -1,4 +1,4 @@
-import type { User as PrivyUser } from "@privy-io/server-auth";
+import type { User as PrivyUser } from "@privy-io/node";
 
 declare global {
   namespace Express {

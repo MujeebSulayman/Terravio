@@ -1,10 +1,17 @@
-import type { User as PrivyUser } from "@privy-io/server-auth";
+import type { User as PrivyUser } from "@privy-io/node";
 import { prisma } from "../lib/prisma";
 import { resolveWalletAddress } from "../lib/resolveWallet";
 
+function pickEmail(user: PrivyUser): string | null {
+  for (const a of user.linked_accounts) {
+    if (a.type === "email") return a.address;
+  }
+  return null;
+}
+
 export async function upsertUserFromPrivy(privyUser: PrivyUser) {
   const wallet = resolveWalletAddress(privyUser);
-  const email = privyUser.email?.address ?? null;
+  const email = pickEmail(privyUser);
 
   return prisma.user.upsert({
     where: { privyId: privyUser.id },

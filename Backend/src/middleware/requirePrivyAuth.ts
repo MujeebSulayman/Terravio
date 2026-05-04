@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { InvalidAuthTokenError } from "@privy-io/node";
 import type { Env } from "../config/env";
 import { HttpError } from "../lib/errors";
 import { getPrivyClient } from "../lib/privy";
@@ -42,14 +43,16 @@ export function requirePrivyAuth(env: Env) {
     if (!privy) {
       return next(new HttpError(500, "Privy is not configured", "privy_unconfigured"));
     }
-
     try {
-      const claims = await privy.verifyAuthToken(token);
-      req.privyUserId = claims.userId;
-      const fullUser = await privy.getUserById(claims.userId);
+      const claims = await privy.utils().auth().verifyAccessToken(token);
+      req.privyUserId = claims.user_id;
+      const fullUser = await privy.users()._get(claims.user_id);
       req.privyUser = fullUser;
-    } catch {
-      return next(new HttpError(401, "Invalid or expired token", "invalid_token"));
+    } catch (e) {
+      if (e instanceof InvalidAuthTokenError) {
+        return next(new HttpError(401, "Invalid or expired token", "invalid_token"));
+      }
+      throw e;
     }
 
     next();

@@ -4,6 +4,7 @@ import type { Env } from "./config/env";
 import { errorHandler } from "./middleware/errorHandler";
 import { healthRoutes } from "./routes/health";
 import { carbonOracleRoutes } from "./routes/carbonOracle";
+import { propertyOracleRoutes } from "./routes/propertyOracle";
 import { usersRoutes } from "./routes/users";
 import { kycRoutes } from "./routes/kyc";
 
@@ -26,6 +27,7 @@ export function createApp(env: Env) {
   app.use(healthRoutes());
 
   app.use("/api/carbon", carbonOracleRoutes(env));
+  app.use("/api/property", propertyOracleRoutes(env));
   app.use("/api/users", usersRoutes(env));
   app.use("/api/kyc", kycRoutes(env));
 
