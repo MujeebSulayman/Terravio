@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id             String   @id @default(cuid())
+  privyId        String   @unique
+  email          String?
+  walletAddress  String?
+  kycStatus      KycStatus @default(PENDING)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  whitelistSubmissions WhitelistSubmission[]
+}
+
+model KycWebhookEvent {
+  id          String   @id @default(cuid())
+  externalId  String   @unique
+  payloadHash String
+  processed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model WhitelistSubmission {
+  id            String   @id @default(cuid())
+  userId        String?
+  walletAddress String
+  tokenAddress  String
+  txHash        String?
+  status        String
+  errorMessage  String?
+  createdAt     DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+/// Off-chain oracle / metadata (e.g. carbon credit status for Chainlink consumer)
+model Asset {
+  id         String   @id @default(cuid())
+  kind       String
+  externalId String
+  status     String
+  quantity   Int?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([kind, externalId])
+}
