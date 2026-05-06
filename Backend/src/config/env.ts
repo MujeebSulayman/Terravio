@@ -81,6 +81,7 @@ export function loadEnv(): Env {
   if (cached) return cached;
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
+    console.error("AVAILABLE ENV KEYS:", Object.keys(process.env));
     const msg = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     throw new Error(`Invalid environment: ${msg}`);
   }
