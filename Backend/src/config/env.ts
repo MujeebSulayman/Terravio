@@ -27,16 +27,10 @@ const envSchema = z.object({
     ),
 
   TERRAVIO_API_KEY: z.preprocess(emptyToUndef, z.string().min(1).optional()),
-  /** RentCast server-side key for property valuation lookups. */
   RENTCAST_API_KEY: z.preprocess(emptyToUndef, z.string().min(1).optional()),
   PRIVY_APP_ID: z.preprocess(emptyToUndef, z.string().optional()),
   PRIVY_APP_SECRET: z.preprocess(emptyToUndef, z.string().optional()),
-  /** Override default `https://api.privy.io` (JWKS + REST). */
   PRIVY_API_BASE_URL: z.preprocess(emptyToUndef, z.string().url().optional()),
-  /**
-   * Optional SPKI verification key from Privy dashboard (skips remote JWKS if set).
-   * `createPrivyAppJWKS` accepts this as `verificationKeyOverride`.
-   */
   PRIVY_JWT_VERIFICATION_KEY: z.preprocess(emptyToUndef, z.string().optional()),
   DEV_SKIP_AUTH: z
     .string()
@@ -61,15 +55,10 @@ const envSchema = z.object({
       return normalized;
     }),
 
-  /** Application id in Didit console (optional; for logging / future checks). */
   DIDIT_APP_ID: z.preprocess(emptyToUndef, z.string().optional()),
-  /** Server-side API key: `x-api-key` for https://verification.didit.me/... */
   DIDIT_API_KEY: z.preprocess(emptyToUndef, z.string().optional()),
-  /** Default workflow id from console (webhook `workflow_id` must match when set). */
   DIDIT_WORKFLOW_ID: z.preprocess(emptyToUndef, z.string().optional()),
-  /** Override Didit API host (default https://verification.didit.me) */
   DIDIT_API_BASE_URL: z.preprocess(emptyToUndef, z.string().url().optional()),
-  /** Webhook secret for HMAC (`X-Signature-V2` / `X-Signature-Simple`). */
   DIDIT_WEBHOOK_SECRET: z.preprocess(emptyToUndef, z.string().optional()),
 });
 
