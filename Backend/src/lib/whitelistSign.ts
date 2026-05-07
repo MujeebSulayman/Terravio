@@ -26,7 +26,6 @@ export async function signWhitelistApproval(
 ): Promise<string> {
   const domain = buildWhitelistDomain(token, chainId);
   const value = { investor, deadline };
-  // ethers v6: sign typed data (EIP-712)
   const signature = await signer.signTypedData(domain, WHITELIST_TYPES, value);
   return signature;
 }

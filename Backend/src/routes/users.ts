@@ -8,7 +8,7 @@ import { BASE_RWA_WHITELIST_ABI } from "../abis/baseRWAToken";
 import { getConfiguredRwaTokens } from "../lib/rwaTokens";
 import { ethers } from "ethers";
 
-const DEFAULT_RPC = "https://sepolia.base.org";
+
 
 export function usersRoutes(env: Env) {
   const r = Router();
@@ -43,7 +43,7 @@ export function usersRoutes(env: Env) {
       if (user.walletAddress) {
         const tokens = getConfiguredRwaTokens(env);
         if (tokens.length > 0) {
-          const provider = new ethers.JsonRpcProvider(env.BASE_RPC_URL ?? DEFAULT_RPC);
+          const provider = new ethers.JsonRpcProvider(env.BASE_RPC_URL);
           whitelistOnChain = {};
           for (const t of tokens) {
             try {

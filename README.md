@@ -34,7 +34,7 @@ To run the Terravio protocol locally, each service must be initialized independe
 Navigate to the `/Contract` directory. Copy the `.env.example` to `.env` and provide your RPC URLs, Private Keys, and Oracle API credentials. Refer to the `Contract/README.md` for compilation and deployment commands.
 
 ### 2. Backend
-Navigate to the `/Backend` directory to initialize the local server, database connections, and API endpoints required by the Chainlink Functions.
+Navigate to the `/Backend` directory. Copy the `.env.example` to `.env` to initialize the local server, database connections, and API endpoints required by the Chainlink Functions.
 
 ### 3. Frontend
 Navigate to the `/frontend` directory, install the package dependencies, and spin up the development server to interact with your deployed contracts.
