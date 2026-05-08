@@ -1,6 +1,6 @@
 import { http } from 'viem';
 import { baseSepolia } from 'viem/chains';
-import { createConfig } from '@privy-io/react-auth';
+import { createConfig } from '@privy-io/wagmi';
 
 export const wagmiConfig = createConfig({
   chains: [baseSepolia],
@@ -8,3 +8,4 @@ export const wagmiConfig = createConfig({
     [baseSepolia.id]: http(),
   },
 });
+
