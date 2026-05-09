@@ -21,28 +21,57 @@ import {
   Coins,
   ChevronRight,
   X,
-  Lock
+  Lock,
+  RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 
 export default function Dashboard() {
-  const { ready, authenticated, user, logout } = usePrivy();
+  const { ready, authenticated, user, logout, getAccessToken } = usePrivy();
   const router = useRouter();
+  const [backendUser, setBackendUser] = useState<any>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
+    // Only redirect if Privy is fully loaded and we are CERTAIN the user is not logged in
     if (ready && !authenticated) {
       router.push("/");
     }
   }, [ready, authenticated, router]);
 
+  useEffect(() => {
+    const syncUser = async () => {
+      if (authenticated && user) {
+        setIsSyncing(true);
+        try {
+          const token = await getAccessToken();
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const data = await res.json();
+          setBackendUser(data);
+          // Store token for other calls if needed
+          if (token) window.localStorage.setItem('privy:token', token);
+        } catch (e) {
+          console.error("User sync failed:", e);
+        } finally {
+          setIsSyncing(false);
+        }
+      }
+    };
+    syncUser();
+  }, [authenticated, user, getAccessToken]);
+
   // Aggregate stats across all tokens
   const [totalPortfolioValue, setTotalPortfolioValue] = useState(0);
   const [weightedYield, setWeightedYield] = useState(0);
 
-  if (!ready || !authenticated) {
+  if (!ready || !authenticated || isSyncing) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-screen bg-slate-50">
-        <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#C5A059] animate-spin" />
       </div>
     );
   }
@@ -79,11 +108,11 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         {/* Whitelisting Status Banner */}
-        <ComplianceBanner userAddress={user?.wallet?.address} />
+        <ComplianceBanner userAddress={user?.wallet?.address} backendUser={backendUser} />
 
         {/* Dynamic Overview Stats */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <OverviewStats userAddress={user?.wallet?.address} />
+          <OverviewStats backendUser={backendUser} />
         </section>
 
         {/* Portfolio Distribution Mock */}
@@ -148,8 +177,27 @@ function DistributionItem({ color, label, value }: { color: string, label: strin
     </div>
   );
 }
+function ComplianceBanner({ userAddress, backendUser }: { userAddress?: string, backendUser?: any }) {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { getAccessToken } = usePrivy();
+  const kycStatus = backendUser?.kycStatus || "UNVERIFIED";
 
-function ComplianceBanner({ userAddress }: { userAddress?: string }) {
+  const handleRefreshStatus = async () => {
+    setIsRefreshing(true);
+    try {
+      const token = await getAccessToken();
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/kyc/refresh`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      // Force a reload to get the latest /me status
+      window.location.reload();
+    } catch (e) {
+      console.error("Status refresh failed:", e);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   // We check the first token as a proxy for global whitelisting status
   const { data: isWhitelisted, isLoading } = useReadContract({
     address: TOKENS[0].address,
@@ -159,7 +207,8 @@ function ComplianceBanner({ userAddress }: { userAddress?: string }) {
     query: { enabled: !!userAddress }
   });
 
-  if (isLoading || isWhitelisted) return null;
+  // If already whitelisted on-chain OR approved in DB, hide the "Need to Verify" banner
+  if (isLoading || isWhitelisted || kycStatus === "APPROVED") return null;
 
   return (
     <motion.div 
@@ -172,23 +221,41 @@ function ComplianceBanner({ userAddress }: { userAddress?: string }) {
           <ShieldAlert className="w-6 h-6" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-amber-900 tracking-tight">Identity Verification Required</h3>
-          <p className="text-sm text-amber-700">To start investing in tokenized real-world assets, you must first complete our KYC verification.</p>
+          <h3 className="text-lg font-bold text-amber-900 tracking-tight">
+            {kycStatus === "PENDING" ? "Verification In Progress" : "Identity Verification Required"}
+          </h3>
+          <p className="text-sm text-amber-700">
+            {kycStatus === "PENDING" 
+              ? "Your documents are being reviewed. We'll automatically whitelist your wallet shortly."
+              : "To start investing in tokenized real-world assets, you must first complete our KYC verification."}
+          </p>
         </div>
       </div>
-      <Link 
-        href="/verify"
-        className="h-11 px-8 inline-flex items-center justify-center rounded-lg bg-amber-600 text-white font-bold hover:bg-amber-700 transition-all shadow-sm whitespace-nowrap"
-      >
-        Start Verification
-      </Link>
+      
+      {kycStatus === "PENDING" ? (
+        <button 
+          onClick={handleRefreshStatus}
+          disabled={isRefreshing}
+          className="h-11 px-8 inline-flex items-center justify-center rounded-lg bg-amber-600 text-white font-bold hover:bg-amber-700 transition-all shadow-sm whitespace-nowrap gap-2 disabled:opacity-50"
+        >
+          {isRefreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          Refresh Status
+        </button>
+      ) : (
+        <Link 
+          href="/verify"
+          className="h-11 px-8 inline-flex items-center justify-center rounded-lg bg-amber-600 text-white font-bold hover:bg-amber-700 transition-all shadow-sm whitespace-nowrap"
+        >
+          Start Verification
+        </Link>
+      )}
     </motion.div>
   );
 }
 
-function OverviewStats({ userAddress }: { userAddress?: string }) {
-  // In a real prod app, we would sum these up via a multicall or a custom hook
-  // For now, we'll show the connection status as the primary stat
+function OverviewStats({ backendUser }: { backendUser?: any }) {
+  const kycStatus = backendUser?.kycStatus || "UNVERIFIED";
+  
   return (
     <>
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -223,8 +290,10 @@ function OverviewStats({ userAddress }: { userAddress?: string }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-slate-900 tracking-tight">Verified</span>
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-2xl font-bold text-slate-900 tracking-tight">
+            {kycStatus === "APPROVED" ? "Verified" : kycStatus === "PENDING" ? "Pending" : "Unverified"}
+          </span>
+          <div className={`w-2 h-2 rounded-full animate-pulse ${kycStatus === "APPROVED" ? "bg-emerald-500" : "bg-amber-500"}`} />
         </div>
       </div>
     </>

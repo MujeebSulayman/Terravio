@@ -9,12 +9,8 @@ import { wagmiConfig } from "../lib/wagmi";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "cl_placeholder_id";
   
-  if (!appId) {
-    return <>{children}</>;
-  }
-
   return (
     <PrivyProvider
       appId={appId}

@@ -1,12 +1,14 @@
 import { createHash } from "node:crypto";
 import { ethers } from "ethers";
 import { Router, type Request } from "express";
+import axios from "axios";
 import type { Env } from "../config/env";
 import { verifyDiditWebhookRequest } from "../lib/diditWebhook";
 import { HttpError } from "../lib/errors";
 import { prisma } from "../lib/prisma";
 import { fetchDiditSessionDecision } from "../services/diditSessionService";
 import { whitelistWalletOnAllTokens } from "../services/whitelistService";
+import { requirePrivyAuth } from "../middleware/requirePrivyAuth";
 
 function headerString(req: Request, name: string): string | undefined {
   const v = req.headers[name];
@@ -86,21 +88,87 @@ function isPositiveDecision(env: Env, body: Record<string, unknown>): boolean {
   const wtype = typeof body.webhook_type === "string" ? body.webhook_type : "";
   if (wtype === "transaction.created" || wtype === "transaction.status.updated") {
     const s = typeof body.status === "string" ? body.status.toUpperCase() : "";
-    return s === "APPROVED";
+    return s === "APPROVED" || s === "COMPLETED" || s === "SUCCESS";
   }
+  
   const st = typeof body.status === "string" ? body.status.toLowerCase() : "";
-  if (st === "approved") return true;
+  const positiveStates = ["approved", "completed", "success", "verified", "verified_identity"];
+  if (positiveStates.includes(st)) return true;
 
   const decision = body.decision;
   if (decision && typeof decision === "object") {
     const ds = (decision as Record<string, unknown>).status;
-    if (typeof ds === "string" && ds.toLowerCase() === "approved") return true;
+    if (typeof ds === "string" && positiveStates.includes(ds.toLowerCase())) return true;
   }
   return false;
 }
 
 export function kycRoutes(env: Env) {
   const r = Router();
+
+  r.post("/session", requirePrivyAuth(env), async (req, res, next) => {
+    try {
+      const privyUser = req.privyUser;
+      if (!privyUser) {
+        return next(new HttpError(401, "Authentication required", "unauthorized"));
+      }
+
+      const { upsertUserFromPrivy } = require("../services/userService");
+      const user = await upsertUserFromPrivy(privyUser);
+
+      const walletAccount = privyUser.linked_accounts.find((a) => a.type === "wallet") as any;
+      const wallet = walletAccount?.address;
+      if (!wallet) {
+        return next(new HttpError(400, "Wallet required for KYC", "wallet_required"));
+      }
+
+      // Create Didit session
+      let diditResponse;
+      try {
+        const frontendUrl = req.headers.origin || env.FRONTEND_URL;
+        diditResponse = await axios.post(
+          "https://verification.didit.me/v3/session/",
+          {
+            workflow_id: env.DIDIT_WORKFLOW_ID,
+            vendor_data: wallet,
+            callback_url: `${frontendUrl}/dashboard`,
+            redirect_url: `${frontendUrl}/dashboard`
+          },
+          {
+            headers: {
+              "x-api-key": env.DIDIT_API_KEY,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+      } catch (error: any) {
+        console.error("Didit API Error:", error.response?.data || error.message);
+        return next(new HttpError(
+          error.response?.status || 500,
+          `Didit Session Error: ${JSON.stringify(error.response?.data || error.message)}`,
+          "didit_error"
+        ));
+      }
+
+      res.json({
+        ok: true,
+        session_id: diditResponse.data.id,
+        url: diditResponse.data.url
+      });
+
+      // Update user with session ID and reset status to PENDING to ensure fresh check
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { 
+          kycSessionId: diditResponse.data.id,
+          kycStatus: "PENDING"
+        } as any
+      });
+    } catch (e) {
+      console.error("Internal KYC Route Error:", e);
+      next(e);
+    }
+  });
 
   r.post("/didit-webhook", async (req, res, next) => {
     try {
@@ -212,6 +280,58 @@ export function kycRoutes(env: Env) {
       });
 
       res.json({ ok: true, processed: true, whitelistResults });
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  r.get("/refresh", requirePrivyAuth(env), async (req, res, next) => {
+    try {
+      const privyId = req.privyUserId;
+      const user = (await prisma.user.findUnique({ where: { privyId } })) as any;
+
+      if (!user || !user.kycSessionId) {
+        return res.json({ ok: true, status: user?.kycStatus || "UNVERIFIED" });
+      }
+
+      // Fetch latest from Didit
+      try {
+        const diditRes = await axios.get(
+          `https://verification.didit.me/v3/session/${user.kycSessionId}/`,
+          {
+            headers: { "x-api-key": env.DIDIT_API_KEY }
+          }
+        );
+
+        const data = diditRes.data;
+        console.log("Didit Refresh Data:", data);
+
+        if (isPositiveDecision(env, data)) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { kycStatus: "APPROVED" }
+          });
+          
+          // Trigger whitelisting if wallet exists
+          if (user.walletAddress) {
+            const { whitelistWalletOnAllTokens } = require("../services/kycService");
+            whitelistWalletOnAllTokens(env, user.walletAddress).catch(console.error);
+          }
+
+          return res.json({ ok: true, status: "APPROVED" });
+        } else if (data.status === "REJECTED" || data.decision?.status === "REJECTED") {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { kycStatus: "REJECTED" }
+          });
+          return res.json({ ok: true, status: "REJECTED" });
+        }
+
+        return res.json({ ok: true, status: user.kycStatus });
+      } catch (error: any) {
+        console.error("Didit Refresh Error:", error.response?.data || error.message);
+        return res.json({ ok: false, error: "Failed to fetch from Didit" });
+      }
     } catch (e) {
       next(e);
     }

@@ -2,14 +2,15 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ShieldCheck, ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 export default function VerifyPage() {
-  const { ready, authenticated, user } = usePrivy();
+  const { ready, authenticated, user, getAccessToken } = usePrivy();
   const router = useRouter();
+  const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
     if (ready && !authenticated) {
@@ -17,16 +18,42 @@ export default function VerifyPage() {
     }
   }, [ready, authenticated, router]);
 
+  const handleStartVerification = async () => {
+    setIsStarting(true);
+    try {
+      const token = await getAccessToken();
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/kyc/session`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error("No URL returned from session creation", data);
+      }
+    } catch (error) {
+      console.error("Failed to start verification:", error);
+    } finally {
+      setIsStarting(false);
+    }
+  };
+
   if (!ready || !authenticated) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-screen bg-slate-50">
-        <Loader2 className="w-6 h-6 text-gold animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#C5A059] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       <nav className="w-full border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors font-bold text-xs uppercase tracking-widest">
@@ -63,11 +90,21 @@ export default function VerifyPage() {
           </div>
 
           <button 
-            className="w-full h-14 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-3 text-lg"
-            onClick={() => window.open('https://didit.me', '_blank')}
+            className="w-full h-14 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-3 text-lg disabled:opacity-50"
+            onClick={handleStartVerification}
+            disabled={isStarting}
           >
-            Launch Didit Verification
-            <ExternalLink className="w-5 h-5" />
+            {isStarting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Initializing...
+              </>
+            ) : (
+              <>
+                Launch Didit Verification
+                <ExternalLink className="w-5 h-5" />
+              </>
+            )}
           </button>
           
           <p className="text-[10px] text-slate-400 mt-6 uppercase tracking-widest font-bold">

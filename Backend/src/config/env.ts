@@ -26,6 +26,8 @@ const envSchema = z.object({
         .filter(Boolean)
     ),
 
+  FRONTEND_URL: z.string().default("http://localhost:3000"),
+
   TERRAVIO_API_KEY: z.preprocess(emptyToUndef, z.string().min(1).optional()),
   RENTCAST_API_KEY: z.preprocess(emptyToUndef, z.string().min(1).optional()),
   PRIVY_APP_ID: z.preprocess(emptyToUndef, z.string().optional()),
