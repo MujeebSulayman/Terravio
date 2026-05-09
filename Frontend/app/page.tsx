@@ -216,7 +216,7 @@ export default function Home() {
             <div className="relative">
               <div className="aspect-square bg-slate-200 rounded-2xl overflow-hidden shadow-2xl relative z-10">
                  <img 
-                   src="https://images.unsplash.com/photo-1551288049-bbbda5366392?auto=format&fit=crop&q=80&w=1200" 
+                   src="/dashboard-preview.png" 
                    alt="Dashboard Preview" 
                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
                  />
