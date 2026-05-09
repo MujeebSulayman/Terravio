@@ -1,7 +1,7 @@
 export const TOKENS = [
   {
     id: "gold",
-    name: "Vaulted Physical Gold",
+    name: " ",
     address: "0xB5b3470F502DBFa709bCd4ad0C2a250ff8D49986" as const,
     color: "amber",
   },

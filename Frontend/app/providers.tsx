@@ -9,16 +9,16 @@ import { wagmiConfig } from "../lib/wagmi";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID as string;
   return (
     <PrivyProvider
       appId={appId}
       config={{
         loginMethods: ["email", "wallet"],
         appearance: {
-          theme: "dark",
+          theme: "light",
           accentColor: "#4f46e5",
-          logo: "https://auth.privy.io/logos/privy-logo-dark.png",
+          logo: "https://auth.privy.io/logos/privy-logo.png",
         },
       }}
     >
