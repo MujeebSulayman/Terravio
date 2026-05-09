@@ -59,5 +59,42 @@ export const BaseRWATokenABI = [
     inputs: [{ name: "investor", type: "address" }],
     outputs: [{ name: "", type: "bool" }],
     stateMutability: "view"
+  },
+  {
+    type: "function",
+    name: "asset",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+    stateMutability: "view"
+  }
+] as const;
+
+export const ERC20ABI = [
+  {
+    type: "function",
+    name: "approve",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" }
+    ],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable"
+  },
+  {
+    type: "function",
+    name: "allowance",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" }
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view"
+  },
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view"
   }
 ] as const;

@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TOKENS } from "../../lib/constants";
-import { BaseRWATokenABI } from "../../lib/abi";
+import { BaseRWATokenABI, ERC20ABI } from "../../lib/abi";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { formatUnits, parseUnits } from "viem";
+import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { 
   Wallet, 
   LogOut, 
@@ -20,7 +20,8 @@ import {
   ShieldAlert,
   Coins,
   ChevronRight,
-  X
+  X,
+  Lock
 } from "lucide-react";
 import Link from "next/link";
 
@@ -53,10 +54,10 @@ export default function Dashboard() {
         <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center group-hover:bg-indigo-700 transition-colors">
-                <span className="text-white font-bold text-xs">T</span>
+              <div className="w-8 h-8 rounded bg-[#C5A059] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                <span className="text-white font-serif font-black text-sm">T</span>
               </div>
-              <span className="text-lg font-bold tracking-tight text-slate-900">Terravio</span>
+              <span className="text-xl font-serif font-bold tracking-tight text-slate-900">Terravio</span>
             </Link>
           </div>
           
@@ -77,6 +78,9 @@ export default function Dashboard() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-12">
+        {/* Whitelisting Status Banner */}
+        <ComplianceBanner userAddress={user?.wallet?.address} />
+
         {/* Dynamic Overview Stats */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <OverviewStats userAddress={user?.wallet?.address} />
@@ -111,6 +115,43 @@ export default function Dashboard() {
   );
 }
 
+function ComplianceBanner({ userAddress }: { userAddress?: string }) {
+  // We check the first token as a proxy for global whitelisting status
+  const { data: isWhitelisted, isLoading } = useReadContract({
+    address: TOKENS[0].address,
+    abi: BaseRWATokenABI,
+    functionName: "isWhitelisted",
+    args: userAddress ? [userAddress as `0x${string}`] : undefined,
+    query: { enabled: !!userAddress }
+  });
+
+  if (isLoading || isWhitelisted) return null;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-12 p-6 rounded-xl bg-amber-50 border border-amber-200 flex flex-col md:flex-row items-center justify-between gap-6"
+    >
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-gold border border-amber-200">
+          <ShieldAlert className="w-6 h-6" />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-amber-900 tracking-tight">Identity Verification Required</h3>
+          <p className="text-sm text-amber-700">To start investing in tokenized real-world assets, you must first complete our KYC verification.</p>
+        </div>
+      </div>
+      <Link 
+        href="/verify"
+        className="h-11 px-8 inline-flex items-center justify-center rounded-lg bg-amber-600 text-white font-bold hover:bg-amber-700 transition-all shadow-sm whitespace-nowrap"
+      >
+        Start Verification
+      </Link>
+    </motion.div>
+  );
+}
+
 function OverviewStats({ userAddress }: { userAddress?: string }) {
   // In a real prod app, we would sum these up via a multicall or a custom hook
   // For now, we'll show the connection status as the primary stat
@@ -119,7 +160,7 @@ function OverviewStats({ userAddress }: { userAddress?: string }) {
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Portfolio Value</span>
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
+          <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-gold border border-slate-100">
             <Wallet className="w-4 h-4" />
           </div>
         </div>
@@ -143,7 +184,7 @@ function OverviewStats({ userAddress }: { userAddress?: string }) {
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Compliance Status</span>
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
+          <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-gold border border-slate-100">
             <ShieldCheck className="w-4 h-4" />
           </div>
         </div>
@@ -174,6 +215,20 @@ function AssetCard({ token, userAddress }: { token: typeof TOKENS[0], userAddres
     query: { enabled: !!userAddress }
   });
 
+  const { data: assetAddress } = useReadContract({
+    address: token.address,
+    abi: BaseRWATokenABI,
+    functionName: "asset",
+  });
+
+  const { data: allowance, refetch: refetchAllowance } = useReadContract({
+    address: assetAddress || zeroAddress,
+    abi: ERC20ABI,
+    functionName: "allowance",
+    args: userAddress && token.address ? [userAddress as `0x${string}`, token.address] : undefined,
+    query: { enabled: !!userAddress && !!assetAddress && assetAddress !== zeroAddress }
+  });
+
   const { data: isWhitelisted } = useReadContract({
     address: token.address,
     abi: BaseRWATokenABI,
@@ -193,22 +248,53 @@ function AssetCard({ token, userAddress }: { token: typeof TOKENS[0], userAddres
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
+  const { writeContract: approve, data: approveHash, isPending: isApproving } = useWriteContract();
+  const { isLoading: isConfirmingApprove, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveHash });
+
   useEffect(() => {
     if (isSuccess) {
       refetchBalance();
       refetchMetadata();
+      refetchAllowance();
       setIsInvestModalOpen(false);
       setInvestAmount("");
     }
-  }, [isSuccess, refetchBalance, refetchMetadata]);
+  }, [isSuccess, refetchBalance, refetchMetadata, refetchAllowance]);
+
+  useEffect(() => {
+    if (isApproveSuccess) {
+      refetchAllowance();
+    }
+  }, [isApproveSuccess, refetchAllowance]);
 
   const valuation = metadata ? formatUnits(metadata.valuationUSD, 18) : "0";
   const yieldBPS = metadata ? Number(metadata.yieldBPS) / 100 : 0;
   const userBalance = balance ? formatUnits(balance, 18) : "0";
   const claimableAmount = claimable ? formatUnits(claimable, 18) : "0";
 
+  const needsApproval = useMemo(() => {
+    if (!investAmount || !allowance) return false;
+    try {
+      const amount = parseUnits(investAmount, 18);
+      return (allowance as bigint) < amount;
+    } catch {
+      return false;
+    }
+  }, [investAmount, allowance]);
+
   const handleInvest = () => {
     if (!investAmount || isNaN(Number(investAmount))) return;
+    
+    if (needsApproval) {
+      approve({
+        address: assetAddress!,
+        abi: ERC20ABI,
+        functionName: "approve",
+        args: [token.address, parseUnits(investAmount, 18)],
+      });
+      return;
+    }
+
     writeContract({
       address: token.address,
       abi: BaseRWATokenABI,
@@ -236,7 +322,7 @@ function AssetCard({ token, userAddress }: { token: typeof TOKENS[0], userAddres
             </p>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <div className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold tracking-wider">
+            <div className="px-2 py-0.5 bg-amber-50 text-[#C5A059] rounded text-[10px] font-bold tracking-wider">
               {yieldBPS.toFixed(2)}% APY
             </div>
             {isWhitelisted ? (
@@ -338,18 +424,23 @@ function AssetCard({ token, userAddress }: { token: typeof TOKENS[0], userAddres
 
               <button 
                 onClick={handleInvest}
-                disabled={!investAmount || isPending || isConfirming}
-                className="w-full h-12 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                disabled={!investAmount || isPending || isConfirming || isApproving || isConfirmingApprove}
+                className="w-full h-12 rounded-lg bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isPending || isConfirming ? (
+                {isPending || isConfirming || isApproving || isConfirmingApprove ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Processing...
+                    {isApproving || isConfirmingApprove ? "Approving..." : "Processing..."}
+                  </>
+                ) : needsApproval ? (
+                  <>
+                    Approve USDC
+                    <Lock className="w-4 h-4 text-gold" />
                   </>
                 ) : (
                   <>
                     Confirm Investment
-                    <Coins className="w-4 h-4" />
+                    <Coins className="w-4 h-4 text-gold" />
                   </>
                 )}
               </button>

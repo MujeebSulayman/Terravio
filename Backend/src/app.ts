@@ -7,6 +7,7 @@ import { carbonOracleRoutes } from "./routes/carbonOracle";
 import { propertyOracleRoutes } from "./routes/propertyOracle";
 import { usersRoutes } from "./routes/users";
 import { kycRoutes } from "./routes/kyc";
+import { protocolRoutes } from "./routes/protocol";
 
 export function createApp(env: Env) {
   const app = express();
@@ -30,6 +31,7 @@ export function createApp(env: Env) {
   app.use("/api/property", propertyOracleRoutes(env));
   app.use("/api/users", usersRoutes(env));
   app.use("/api/kyc", kycRoutes(env));
+  app.use("/api/protocol", protocolRoutes(env));
 
   app.use(errorHandler);
 
