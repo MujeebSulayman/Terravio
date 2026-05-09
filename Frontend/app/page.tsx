@@ -214,13 +214,91 @@ export default function Home() {
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-square bg-slate-200 rounded-2xl overflow-hidden shadow-2xl relative z-10">
-                 <img 
-                   src="/dashboard-preview.png" 
-                   alt="Dashboard Preview" 
-                   className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                 />
-              </div>
+            <div className="relative group perspective-1000">
+              <motion.div 
+                initial={{ rotateY: -5, rotateX: 5 }}
+                whileHover={{ rotateY: 0, rotateX: 0 }}
+                className="aspect-[16/10] bg-white rounded-xl overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border border-slate-200 relative z-10 flex flex-col transition-all duration-700"
+              >
+                {/* Browser Header */}
+                <div className="h-10 bg-slate-50 border-b border-slate-200 flex items-center px-4 gap-2 flex-shrink-0">
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-slate-300" />
+                  </div>
+                  <div className="mx-auto w-1/2 h-5 bg-white rounded border border-slate-200 flex items-center px-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-400 mr-2" />
+                    <div className="text-[8px] text-slate-400 font-mono">terravio.app/dashboard</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-1 overflow-hidden">
+                  {/* Mock Sidebar */}
+                  <div className="w-16 border-r border-slate-100 bg-slate-50 flex flex-col items-center py-6 gap-6">
+                    <div className="w-8 h-8 rounded bg-[#C5A059] flex items-center justify-center mb-4">
+                      <span className="text-[10px] font-serif font-black text-white">T</span>
+                    </div>
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className="w-8 h-8 rounded-lg bg-slate-200/50" />
+                    ))}
+                  </div>
+
+                  {/* Mock Content Area */}
+                  <div className="flex-1 p-6 bg-white overflow-hidden">
+                    <div className="flex justify-between items-center mb-8">
+                      <div>
+                         <div className="w-24 h-4 bg-slate-900 rounded-sm mb-1" />
+                         <div className="w-32 h-2 bg-slate-200 rounded-sm" />
+                      </div>
+                      <div className="w-20 h-8 bg-[#C5A059] rounded-md" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6 mb-8">
+                      <div className="h-24 rounded-xl bg-slate-50 border border-slate-100 p-4">
+                         <div className="w-12 h-2 bg-slate-300 rounded-full mb-3" />
+                         <div className="w-20 h-5 bg-slate-900 rounded-sm" />
+                      </div>
+                      <div className="h-24 rounded-xl bg-slate-50 border border-slate-100 p-4">
+                         <div className="w-12 h-2 bg-slate-300 rounded-full mb-3" />
+                         <div className="w-20 h-5 bg-[#C5A059] rounded-sm" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                       <div className="h-12 w-full bg-slate-50 rounded-lg border border-slate-100 flex items-center px-4 justify-between">
+                          <div className="flex items-center gap-3">
+                             <div className="w-6 h-6 rounded bg-slate-200" />
+                             <div className="w-32 h-3 bg-slate-400 rounded-sm" />
+                          </div>
+                          <div className="w-12 h-3 bg-[#C5A059]/40 rounded-sm" />
+                       </div>
+                       <div className="h-12 w-full bg-slate-50 rounded-lg border border-slate-100 flex items-center px-4 justify-between">
+                          <div className="flex items-center gap-3">
+                             <div className="w-6 h-6 rounded bg-slate-200" />
+                             <div className="w-24 h-3 bg-slate-400 rounded-sm" />
+                          </div>
+                          <div className="w-12 h-3 bg-[#C5A059]/40 rounded-sm" />
+                       </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Enhanced floating element */}
+              <motion.div 
+                initial={{ x: 20, y: 20 }}
+                animate={{ x: 0, y: 0 }}
+                className="absolute -bottom-12 -right-12 w-72 h-40 bg-slate-900 rounded-2xl p-8 text-white z-20 shadow-[0_32px_64px_rgba(0,0,0,0.4)] border border-slate-800"
+              >
+                 <div className="flex items-center gap-2 mb-4">
+                    <ShieldCheck className="w-4 h-4 text-[#C5A059]" />
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Verified Vault</span>
+                 </div>
+                 <div className="text-4xl font-serif text-[#C5A059] mb-2">$4,290,120</div>
+                 <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Consolidated TVL</div>
+              </motion.div>
+            </div>
               <div className="absolute -bottom-10 -right-10 w-64 h-64 border-8 border-white rounded-2xl bg-slate-900 p-8 text-white z-20 shadow-2xl hidden md:block">
                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Active Liquidity</div>
                  <div className="text-3xl font-serif text-[#C5A059] mb-2">$4.2M</div>
