@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum KycStatus {
+  UNVERIFIED
   PENDING
   APPROVED
   REJECTED
@@ -18,7 +19,7 @@ model User {
   privyId        String   @unique
   email          String?
   walletAddress  String?
-  kycStatus      KycStatus @default(PENDING)
+  kycStatus      KycStatus @default(UNVERIFIED)
   kycSessionId   String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
