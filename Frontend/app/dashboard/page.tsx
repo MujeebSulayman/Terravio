@@ -48,7 +48,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-indigo-100">
+    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-amber-100 selection:text-amber-900">
       {/* Navigation */}
       <nav className="w-full border-b border-slate-200 bg-white sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
@@ -86,11 +86,33 @@ export default function Dashboard() {
           <OverviewStats userAddress={user?.wallet?.address} />
         </section>
 
+        {/* Portfolio Distribution Mock */}
+        <section className="mb-12 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+           <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-serif font-bold text-slate-900">Portfolio Distribution</h3>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live On-Chain Data</span>
+           </div>
+           <div className="flex flex-col md:flex-row gap-8 items-center">
+              <div className="w-48 h-48 rounded-full border-[16px] border-slate-50 flex items-center justify-center relative">
+                 <div className="absolute inset-0 rounded-full border-[16px] border-[#C5A059] border-t-transparent border-r-transparent rotate-45" />
+                 <div className="text-center">
+                    <div className="text-2xl font-serif font-bold text-slate-900">100%</div>
+                    <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Allocated</div>
+                 </div>
+              </div>
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-6 w-full">
+                 <DistributionItem color="#C5A059" label="Real Estate" value="0%" />
+                 <DistributionItem color="#1A1A1A" label="Physical Gold" value="0%" />
+                 <DistributionItem color="#94a3b8" label="Carbon Credits" value="0%" />
+              </div>
+           </div>
+        </section>
+
         {/* Assets Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Investment Registry</h2>
-            <p className="text-slate-500 text-sm">Real-time asset verification and management.</p>
+            <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Investment Registry</h2>
+            <p className="text-slate-500 text-sm font-light">Real-time asset verification and management.</p>
           </div>
           <div className="flex gap-3">
              <button className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-white border border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
@@ -111,6 +133,18 @@ export default function Dashboard() {
           ))}
         </div>
       </main>
+    </div>
+  );
+}
+
+function DistributionItem({ color, label, value }: { color: string, label: string, value: string }) {
+  return (
+    <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+       <div className="flex items-center gap-2 mb-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+       </div>
+       <div className="text-xl font-serif font-bold text-slate-900">{value}</div>
     </div>
   );
 }
@@ -312,7 +346,7 @@ function AssetCard({ token, userAddress }: { token: typeof TOKENS[0], userAddres
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-indigo-200 transition-all">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-gold/30 transition-all">
       <div className="p-6 flex-1">
         <div className="flex justify-between items-start mb-6">
           <div>
@@ -346,7 +380,7 @@ function AssetCard({ token, userAddress }: { token: typeof TOKENS[0], userAddres
           </div>
           <div className="flex justify-between items-center pb-3 border-b border-slate-50">
             <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Your Position</span>
-            <span className="text-sm font-bold text-indigo-600">{Number(userBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })} Shares</span>
+            <span className="text-sm font-bold text-gold">{Number(userBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })} Shares</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Claimable Yield</span>
@@ -415,7 +449,7 @@ function AssetCard({ token, userAddress }: { token: typeof TOKENS[0], userAddres
                       value={investAmount}
                       onChange={(e) => setInvestAmount(e.target.value)}
                       placeholder="0.00"
-                      className="w-full h-12 bg-slate-50 border border-slate-200 rounded-lg px-4 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      className="w-full h-12 bg-slate-50 border border-slate-200 rounded-lg px-4 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">USDC</div>
                   </div>
