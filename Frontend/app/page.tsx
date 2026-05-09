@@ -25,7 +25,7 @@ export default function Home() {
   const { login, authenticated } = usePrivy();
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] text-slate-900 selection:bg-amber-100 selection:text-amber-900">
+    <div className="min-h-screen bg-[#FAF9F6] text-slate-900 selection:bg-amber-100 selection:text-amber-900 overflow-x-hidden">
       {/* Navigation */}
       <nav className="sticky top-0 z-[100] w-full border-b border-slate-200/50 bg-[#FAF9F6]/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
@@ -70,7 +70,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-6xl md:text-8xl font-serif font-normal tracking-tight text-slate-900 mb-8 leading-[0.95]"
+            className="text-5xl md:text-8xl font-serif font-normal tracking-tight text-slate-900 mb-8 leading-[0.95]"
           >
             The Gold Standard <br />
             <span className="text-[#C5A059]">for Digital Assets.</span>
@@ -114,7 +114,7 @@ export default function Home() {
 
       {/* Social Proof / Partners */}
       <section className="border-y border-slate-200/50 bg-white py-12 px-6">
-        <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-12 grayscale opacity-40">
+        <div className="max-w-7xl mx-auto flex flex-wrap justify-center sm:justify-between items-center gap-8 sm:gap-12 grayscale opacity-40">
            <div className="text-xl font-serif font-black tracking-tighter">BASE</div>
            <div className="text-xl font-serif font-black tracking-tighter italic underline decoration-[#C5A059]">CHAINLINK</div>
            <div className="text-xl font-serif font-black tracking-tighter uppercase">Privy</div>
@@ -322,7 +322,7 @@ export default function Home() {
               <motion.div 
                 initial={{ x: 20, y: 20 }}
                 animate={{ x: 0, y: 0 }}
-                className="absolute -bottom-12 -right-12 w-72 h-40 bg-slate-900 rounded-2xl p-8 text-white z-20 shadow-[0_32px_64px_rgba(0,0,0,0.4)] border border-slate-800"
+                className="absolute -bottom-12 -right-12 w-72 h-40 bg-slate-900 rounded-2xl p-8 text-white z-20 shadow-[0_32px_64px_rgba(0,0,0,0.4)] border border-slate-800 hidden sm:block"
               >
                  <div className="flex items-center gap-2 mb-4">
                     <ShieldCheck className="w-4 h-4 text-[#C5A059]" />

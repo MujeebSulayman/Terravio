@@ -64,10 +64,6 @@ export default function Dashboard() {
     syncUser();
   }, [authenticated, user, getAccessToken]);
 
-  // Aggregate stats across all tokens
-  const [totalPortfolioValue, setTotalPortfolioValue] = useState(0);
-  const [weightedYield, setWeightedYield] = useState(0);
-
   if (!ready || !authenticated || isSyncing) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-screen bg-slate-50">
@@ -77,92 +73,136 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-amber-100 selection:text-amber-900">
-      {/* Navigation */}
-      <nav className="w-full border-b border-slate-200 bg-white sticky top-0 z-50">
-        <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded bg-[#C5A059] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-                <span className="text-white font-serif font-black text-sm">T</span>
-              </div>
-              <span className="text-xl font-serif font-bold tracking-tight text-slate-900">Terravio</span>
-            </Link>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex flex-col items-end mr-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Wallet</span>
-              <span className="text-xs font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded">{user?.wallet?.address?.slice(0, 6)}...{user?.wallet?.address?.slice(-4)}</span>
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Sidebar */}
+      <aside className="w-72 bg-white border-r border-slate-200 flex flex-col sticky top-0 h-screen overflow-y-auto">
+        <div className="p-8">
+          <Link href="/" className="flex items-center gap-2 mb-12">
+            <div className="w-8 h-8 rounded bg-[#C5A059] flex items-center justify-center shadow-sm">
+              <span className="text-white font-serif font-black text-sm">T</span>
             </div>
-            <button 
-              onClick={logout}
-              className="inline-flex items-center justify-center h-9 px-4 rounded-md border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-all gap-2 uppercase tracking-wider"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              Sign Out
-            </button>
-          </div>
+            <span className="text-2xl font-serif font-bold tracking-tight text-slate-900">Terravio</span>
+          </Link>
+
+          <nav className="space-y-1">
+            <SidebarLink icon={Activity} label="Overview" active />
+            <SidebarLink icon={Wallet} label="Portfolio" />
+            <SidebarLink icon={TrendingUp} label="Marketplace" />
+            <SidebarLink icon={History} label="Transactions" />
+          </nav>
         </div>
-      </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        {/* Whitelisting Status Banner */}
-        <ComplianceBanner userAddress={user?.wallet?.address} backendUser={backendUser} />
+        <div className="mt-auto p-6 border-t border-slate-100 bg-slate-50/50">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[#C5A059] shadow-sm">
+              <Wallet className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Active Wallet</p>
+              <p className="text-sm font-bold text-slate-900 truncate">
+                {user?.wallet?.address?.slice(0, 6)}...{user?.wallet?.address?.slice(-4)}
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={logout}
+            className="w-full h-11 rounded-lg border border-slate-200 bg-white text-slate-600 text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Sign Out
+          </button>
+        </div>
+      </aside>
 
-        {/* Dynamic Overview Stats */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <OverviewStats backendUser={backendUser} />
-        </section>
-
-        {/* Portfolio Distribution Mock */}
-        <section className="mb-12 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-           <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-serif font-bold text-slate-900">Portfolio Distribution</h3>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live On-Chain Data</span>
-           </div>
-           <div className="flex flex-col md:flex-row gap-8 items-center">
-              <div className="w-48 h-48 rounded-full border-[16px] border-slate-50 flex items-center justify-center relative">
-                 <div className="absolute inset-0 rounded-full border-[16px] border-[#C5A059] border-t-transparent border-r-transparent rotate-45" />
-                 <div className="text-center">
-                    <div className="text-2xl font-serif font-bold text-slate-900">100%</div>
-                    <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Allocated</div>
-                 </div>
-              </div>
-              <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-6 w-full">
-                 <DistributionItem color="#C5A059" label="Real Estate" value="0%" />
-                 <DistributionItem color="#1A1A1A" label="Physical Gold" value="0%" />
-                 <DistributionItem color="#94a3b8" label="Carbon Credits" value="0%" />
-              </div>
-           </div>
-        </section>
-
-        {/* Assets Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col min-w-0">
+        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10 sticky top-0 z-10">
           <div>
-            <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Investment Registry</h2>
-            <p className="text-slate-500 text-sm font-light">Real-time asset verification and management.</p>
+            <h1 className="text-xl font-serif font-bold text-slate-900">Institutional Dashboard</h1>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Premium RWA Asset Management</p>
           </div>
-          <div className="flex gap-3">
-             <button className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-white border border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
-              <History className="w-4 h-4" />
-              Logs
-            </button>
-            <button className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-slate-900 text-white font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-sm">
-              Marketplace
-              <ChevronRight className="w-4 h-4" />
-            </button>
+          <div className="flex items-center gap-4">
+            <div className="h-10 px-4 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 border border-emerald-100">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Base Sepolia
+            </div>
           </div>
-        </div>
+        </header>
 
-        {/* Asset Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {TOKENS.map((token) => (
-            <AssetCard key={token.id} token={token} userAddress={user?.wallet?.address} />
-          ))}
+        <div className="p-10 max-w-7xl mx-auto w-full">
+          {/* Whitelisting Status Banner */}
+          <ComplianceBanner userAddress={user?.wallet?.address} backendUser={backendUser} />
+
+          {/* Dynamic Overview Stats */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <OverviewStats backendUser={backendUser} />
+          </section>
+
+          {/* Portfolio Insights */}
+          <section className="mb-12 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+             <div className="flex items-center justify-between mb-8">
+                <h3 className="text-xl font-serif font-bold text-slate-900">Portfolio Distribution</h3>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live On-Chain Data</span>
+             </div>
+             <div className="flex flex-col md:flex-row gap-12 items-center">
+                <div className="w-52 h-52 rounded-full border-[20px] border-slate-50 flex items-center justify-center relative shadow-inner">
+                   <div className="absolute inset-0 rounded-full border-[20px] border-[#C5A059] border-t-transparent border-r-transparent rotate-45" />
+                   <div className="text-center">
+                      <div className="text-3xl font-serif font-bold text-slate-900">100%</div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Allocated</div>
+                   </div>
+                </div>
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-8 w-full">
+                   <DistributionItem color="#C5A059" label="Real Estate" value="0%" />
+                   <DistributionItem color="#1A1A1A" label="Physical Gold" value="0%" />
+                   <DistributionItem color="#94a3b8" label="Carbon Credits" value="0%" />
+                </div>
+             </div>
+          </section>
+
+          {/* Assets Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+            <div>
+              <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Investment Registry</h2>
+              <p className="text-slate-500 text-sm font-light">Real-time asset verification and management.</p>
+            </div>
+            <div className="flex gap-3">
+               <button className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-white border border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
+                <History className="w-4 h-4" />
+                Logs
+              </button>
+              <button className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-slate-900 text-white font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-sm">
+                Marketplace
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Asset Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {TOKENS.map((token) => (
+              <AssetCard key={token.id} token={token} userAddress={user?.wallet?.address} />
+            ))}
+          </div>
         </div>
       </main>
     </div>
+  );
+}
+
+function SidebarLink({ icon: Icon, label, active = false }: { icon: any, label: string, active?: boolean }) {
+  return (
+    <Link 
+      href="#" 
+      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group ${
+        active 
+          ? "bg-[#C5A059] text-white shadow-md shadow-[#C5A059]/20" 
+          : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+      }`}
+    >
+      <Icon className={`w-5 h-5 ${active ? "text-white" : "text-slate-400 group-hover:text-slate-600"}`} />
+      <span className="text-sm font-bold tracking-tight">{label}</span>
+    </Link>
   );
 }
 
