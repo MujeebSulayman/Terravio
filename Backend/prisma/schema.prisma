@@ -19,6 +19,7 @@ model User {
   email          String?
   walletAddress  String?
   kycStatus      KycStatus @default(PENDING)
+  kycSessionId   String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

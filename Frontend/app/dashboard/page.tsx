@@ -21,7 +21,8 @@ import {
   Coins,
   ChevronRight,
   X,
-  Lock
+  Lock,
+  RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 
@@ -32,6 +33,7 @@ export default function Dashboard() {
   const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
+    // Only redirect if Privy is fully loaded and we are CERTAIN the user is not logged in
     if (ready && !authenticated) {
       router.push("/");
     }
@@ -176,7 +178,25 @@ function DistributionItem({ color, label, value }: { color: string, label: strin
   );
 }
 function ComplianceBanner({ userAddress, backendUser }: { userAddress?: string, backendUser?: any }) {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { getAccessToken } = usePrivy();
   const kycStatus = backendUser?.kycStatus || "UNVERIFIED";
+
+  const handleRefreshStatus = async () => {
+    setIsRefreshing(true);
+    try {
+      const token = await getAccessToken();
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/kyc/refresh`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      // Force a reload to get the latest /me status
+      window.location.reload();
+    } catch (e) {
+      console.error("Status refresh failed:", e);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // We check the first token as a proxy for global whitelisting status
   const { data: isWhitelisted, isLoading } = useReadContract({
@@ -211,7 +231,17 @@ function ComplianceBanner({ userAddress, backendUser }: { userAddress?: string, 
           </p>
         </div>
       </div>
-      {kycStatus !== "PENDING" && (
+      
+      {kycStatus === "PENDING" ? (
+        <button 
+          onClick={handleRefreshStatus}
+          disabled={isRefreshing}
+          className="h-11 px-8 inline-flex items-center justify-center rounded-lg bg-amber-600 text-white font-bold hover:bg-amber-700 transition-all shadow-sm whitespace-nowrap gap-2 disabled:opacity-50"
+        >
+          {isRefreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          Refresh Status
+        </button>
+      ) : (
         <Link 
           href="/verify"
           className="h-11 px-8 inline-flex items-center justify-center rounded-lg bg-amber-600 text-white font-bold hover:bg-amber-700 transition-all shadow-sm whitespace-nowrap"
