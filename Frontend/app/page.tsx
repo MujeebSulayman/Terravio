@@ -66,14 +66,6 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative px-6 pt-24 pb-32 md:pt-40 md:pb-48 max-w-7xl mx-auto overflow-hidden">
         <div className="max-w-4xl relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest mb-10"
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse" />
-            Institutional Asset Registry
-          </motion.div>
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -213,7 +205,6 @@ export default function Home() {
                 />
               </div>
             </div>
-            <div className="relative">
             <div className="relative group perspective-1000">
               <motion.div 
                 initial={{ rotateY: -5, rotateX: 5 }}
@@ -298,12 +289,6 @@ export default function Home() {
                  <div className="text-4xl font-serif text-[#C5A059] mb-2">$4,290,120</div>
                  <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Consolidated TVL</div>
               </motion.div>
-            </div>
-              <div className="absolute -bottom-10 -right-10 w-64 h-64 border-8 border-white rounded-2xl bg-slate-900 p-8 text-white z-20 shadow-2xl hidden md:block">
-                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Active Liquidity</div>
-                 <div className="text-3xl font-serif text-[#C5A059] mb-2">$4.2M</div>
-                 <div className="text-xs text-slate-400">Total Asset Valuation</div>
-              </div>
             </div>
           </div>
         </div>
