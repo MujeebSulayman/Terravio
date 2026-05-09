@@ -176,7 +176,12 @@ function DistributionItem({ color, label, value }: { color: string, label: strin
   );
 }
 
-function ComplianceBanner({ userAddress }: { userAddress?: string }) {
+        {/* Whitelisting Status Banner */}
+        <ComplianceBanner userAddress={user?.wallet?.address} backendUser={backendUser} />
+...
+function ComplianceBanner({ userAddress, backendUser }: { userAddress?: string, backendUser?: any }) {
+  const kycStatus = backendUser?.kycStatus || "UNVERIFIED";
+
   // We check the first token as a proxy for global whitelisting status
   const { data: isWhitelisted, isLoading } = useReadContract({
     address: TOKENS[0].address,
@@ -186,7 +191,8 @@ function ComplianceBanner({ userAddress }: { userAddress?: string }) {
     query: { enabled: !!userAddress }
   });
 
-  if (isLoading || isWhitelisted) return null;
+  // If already whitelisted on-chain OR approved in DB, hide the "Need to Verify" banner
+  if (isLoading || isWhitelisted || kycStatus === "APPROVED") return null;
 
   return (
     <motion.div 
@@ -199,16 +205,24 @@ function ComplianceBanner({ userAddress }: { userAddress?: string }) {
           <ShieldAlert className="w-6 h-6" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-amber-900 tracking-tight">Identity Verification Required</h3>
-          <p className="text-sm text-amber-700">To start investing in tokenized real-world assets, you must first complete our KYC verification.</p>
+          <h3 className="text-lg font-bold text-amber-900 tracking-tight">
+            {kycStatus === "PENDING" ? "Verification In Progress" : "Identity Verification Required"}
+          </h3>
+          <p className="text-sm text-amber-700">
+            {kycStatus === "PENDING" 
+              ? "Your documents are being reviewed. We'll automatically whitelist your wallet shortly."
+              : "To start investing in tokenized real-world assets, you must first complete our KYC verification."}
+          </p>
         </div>
       </div>
-      <Link 
-        href="/verify"
-        className="h-11 px-8 inline-flex items-center justify-center rounded-lg bg-amber-600 text-white font-bold hover:bg-amber-700 transition-all shadow-sm whitespace-nowrap"
-      >
-        Start Verification
-      </Link>
+      {kycStatus !== "PENDING" && (
+        <Link 
+          href="/verify"
+          className="h-11 px-8 inline-flex items-center justify-center rounded-lg bg-amber-600 text-white font-bold hover:bg-amber-700 transition-all shadow-sm whitespace-nowrap"
+        >
+          Start Verification
+        </Link>
+      )}
     </motion.div>
   );
 }

@@ -118,22 +118,32 @@ export function kycRoutes(env: Env) {
       }
 
       // Create Didit session
-      const diditResponse = await axios.post(
-        "https://api.didit.me/v1/session/",
-        {
-          workflow_id: env.DIDIT_WORKFLOW_ID,
-          metadata: {
-            wallet_address: wallet,
-            privy_id: privyUser.id
+      let diditResponse;
+      try {
+        const frontendUrl = req.headers.origin || env.FRONTEND_URL;
+        diditResponse = await axios.post(
+          "https://verification.didit.me/v3/session/",
+          {
+            workflow_id: env.DIDIT_WORKFLOW_ID,
+            vendor_data: wallet,
+            callback_url: `${frontendUrl}/dashboard`,
+            redirect_url: `${frontendUrl}/dashboard`
+          },
+          {
+            headers: {
+              "x-api-key": env.DIDIT_API_KEY,
+              "Content-Type": "application/json"
+            }
           }
-        },
-        {
-          headers: {
-            "Authorization": `Token ${env.DIDIT_API_KEY}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
+        );
+      } catch (error: any) {
+        console.error("Didit API Error:", error.response?.data || error.message);
+        return next(new HttpError(
+          error.response?.status || 500,
+          `Didit Session Error: ${JSON.stringify(error.response?.data || error.message)}`,
+          "didit_error"
+        ));
+      }
 
       res.json({
         ok: true,
@@ -141,6 +151,7 @@ export function kycRoutes(env: Env) {
         url: diditResponse.data.url
       });
     } catch (e) {
+      console.error("Internal KYC Route Error:", e);
       next(e);
     }
   });

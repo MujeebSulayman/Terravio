@@ -2,7 +2,7 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ShieldCheck, ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -90,11 +90,21 @@ export default function VerifyPage() {
           </div>
 
           <button 
-            className="w-full h-14 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-3 text-lg"
+            className="w-full h-14 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-3 text-lg disabled:opacity-50"
             onClick={handleStartVerification}
+            disabled={isStarting}
           >
-            Launch Didit Verification
-            <ExternalLink className="w-5 h-5" />
+            {isStarting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Initializing...
+              </>
+            ) : (
+              <>
+                Launch Didit Verification
+                <ExternalLink className="w-5 h-5" />
+              </>
+            )}
           </button>
           
           <p className="text-[10px] text-slate-400 mt-6 uppercase tracking-widest font-bold">
