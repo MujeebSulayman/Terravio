@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { ethers } from "ethers";
 import { Router, type Request } from "express";
 import axios from "axios";
@@ -37,6 +37,7 @@ function findEthAddress(value: unknown, depth = 0): string | null {
 
 function pickWalletFromRecord(body: Record<string, unknown>): string | null {
   const direct =
+    (typeof body.vendor_data === "string" && body.vendor_data) ||
     (typeof body.wallet_address === "string" && body.wallet_address) ||
     (typeof body.walletAddress === "string" && body.walletAddress) ||
     (typeof body.wallet === "string" && body.wallet);
@@ -92,7 +93,7 @@ function isPositiveDecision(env: Env, body: Record<string, unknown>): boolean {
   }
   
   const st = typeof body.status === "string" ? body.status.toLowerCase() : "";
-  const positiveStates = ["approved", "completed", "success", "verified", "verified_identity"];
+  const positiveStates = ["approved", "completed", "success", "verified", "verified_identity", "active"];
   if (positiveStates.includes(st)) return true;
 
   const decision = body.decision;
@@ -106,7 +107,7 @@ function isPositiveDecision(env: Env, body: Record<string, unknown>): boolean {
 export function kycRoutes(env: Env) {
   const r = Router();
 
-  r.post("/session", requirePrivyAuth(env), async (req, res, next) => {
+  r.post("/api/kyc/session", requirePrivyAuth(env), async (req, res, next) => {
     try {
       const privyUser = req.privyUser;
       if (!privyUser) {
@@ -126,12 +127,13 @@ export function kycRoutes(env: Env) {
       let diditResponse;
       try {
         const frontendUrl = req.headers.origin || env.FRONTEND_URL;
+        const backendUrl = env.TERRAVIO_BACKEND_BASE_URL || "https://terravio.onrender.com";
         diditResponse = await axios.post(
           "https://verification.didit.me/v3/session/",
           {
             workflow_id: env.DIDIT_WORKFLOW_ID,
             vendor_data: wallet,
-            callback_url: `${frontendUrl}/dashboard`,
+            callback: `${backendUrl}/api/webhooks/didit`,
             redirect_url: `${frontendUrl}/dashboard`
           },
           {
@@ -170,22 +172,31 @@ export function kycRoutes(env: Env) {
     }
   });
 
-  r.post("/didit-webhook", async (req, res, next) => {
+  r.post("/api/webhooks/didit", async (req: any, res, next) => {
     try {
       const body = req.body as Record<string, unknown>;
-      const raw = JSON.stringify(body ?? {});
-      const payloadHash = createHash("sha256").update(raw).digest("hex");
-
+      
       if (env.DIDIT_WEBHOOK_SECRET) {
-        const signatureV2 = headerString(req, "x-signature-v2");
-        const signatureSimple = headerString(req, "x-signature-simple");
-        const timestamp = headerString(req, "x-timestamp");
-        const ok = verifyDiditWebhookRequest(
-          body,
-          { signatureV2, signatureSimple, timestamp },
-          env.DIDIT_WEBHOOK_SECRET
+        const signatureV2 = req.headers["x-signature-v2"];
+        const rawBody = req.rawBody;
+
+        if (!signatureV2 || !rawBody) {
+          console.error("[Didit Webhook] Missing signature or raw body");
+          return next(new HttpError(401, "Invalid Didit webhook request", "didit_invalid_request"));
+        }
+
+        const hmac = createHmac("sha256", env.DIDIT_WEBHOOK_SECRET);
+        hmac.update(rawBody);
+        const calculatedSignature = hmac.digest("hex");
+
+        // Use constant-time comparison
+        const isVerified = timingSafeEqual(
+          Buffer.from(signatureV2, "hex"),
+          Buffer.from(calculatedSignature, "hex")
         );
-        if (!ok) {
+
+        if (!isVerified) {
+          console.error("[Didit Webhook] Signature mismatch");
           return next(new HttpError(401, "Invalid Didit webhook signature", "didit_signature"));
         }
       } else if (env.NODE_ENV === "production") {
@@ -193,9 +204,7 @@ export function kycRoutes(env: Env) {
           new HttpError(503, "DIDIT_WEBHOOK_SECRET is required in production", "didit_misconfigured")
         );
       } else {
-        console.warn(
-          "[Didit] DIDIT_WEBHOOK_SECRET is not set — accepting unsigned webhooks (development only). Do not use in production."
-        );
+        console.warn("[Didit] Accepting unsigned webhook (dev only)");
       }
 
       if (!applicationMatches(env, body)) {
@@ -205,6 +214,8 @@ export function kycRoutes(env: Env) {
       if (!workflowMatches(env, body)) {
         return res.json({ ok: true, skipped: true, reason: "workflow_id_mismatch" });
       }
+
+      const payloadHash = createHash("sha256").update(req.rawBody || JSON.stringify(body)).digest("hex");
 
       const externalId =
         (typeof body.event_id === "string" && body.event_id) ||

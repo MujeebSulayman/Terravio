@@ -27,6 +27,7 @@ const envSchema = z.object({
     ),
 
   FRONTEND_URL: z.string().default("http://localhost:3000"),
+  TERRAVIO_BACKEND_BASE_URL: z.string().default("https://terravio.onrender.com"),
 
   TERRAVIO_API_KEY: z.preprocess(emptyToUndef, z.string().min(1).optional()),
   RENTCAST_API_KEY: z.preprocess(emptyToUndef, z.string().min(1).optional()),

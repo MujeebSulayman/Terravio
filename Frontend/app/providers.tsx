@@ -25,6 +25,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
           accentColor: "#C5A059",
           showWalletLoginFirst: true,
         },
+        embeddedWallets: {
+          ethereum: {
+            createOnLogin: 'users-without-wallets',
+          },
+        },
       }}
     >
       <QueryClientProvider client={queryClient}>

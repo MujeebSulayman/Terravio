@@ -46,7 +46,7 @@ export function requirePrivyAuth(env: Env) {
     try {
       const claims = await privy.utils().auth().verifyAccessToken(token);
       req.privyUserId = claims.user_id;
-      const fullUser = await privy.users()._get(claims.user_id);
+      const fullUser = await (privy as any).getUser(claims.user_id);
       req.privyUser = fullUser;
     } catch (e) {
       if (e instanceof InvalidAuthTokenError) {

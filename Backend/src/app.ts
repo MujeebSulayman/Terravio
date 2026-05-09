@@ -23,14 +23,19 @@ export function createApp(env: Env) {
     })
   );
 
-  app.use(express.json({ limit: "2mb" }));
+  app.use(express.json({ 
+    limit: "2mb",
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    }
+  }));
 
   app.use(healthRoutes());
 
   app.use("/api/carbon", carbonOracleRoutes(env));
   app.use("/api/property", propertyOracleRoutes(env));
   app.use("/api/users", usersRoutes(env));
-  app.use("/api/kyc", kycRoutes(env));
+  app.use("/", kycRoutes(env)); // Mount at root so internal routes can be /api/webhooks/didit
   app.use("/api/protocol", protocolRoutes(env));
 
   app.use(errorHandler);
