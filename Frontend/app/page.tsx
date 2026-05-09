@@ -126,33 +126,50 @@ export default function Home() {
       {/* Marketplace Section */}
       <section id="market" className="px-6 py-32 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-24">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-24"
+          >
             <h2 className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.3em] mb-4">The Marketplace</h2>
             <h3 className="text-4xl md:text-5xl font-serif text-slate-900">Curated Asset Classes</h3>
-          </div>
+          </motion.div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <AssetCard 
-              icon={<Building2 className="w-7 h-7" />}
-              title="Real Estate"
-              description="Direct ownership of high-yield residential and commercial properties with monthly yield distribution."
-              stats="8.4% APY"
-              image="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800"
-            />
-            <AssetCard 
-              icon={<Coins className="w-7 h-7" />}
-              title="Physical Gold"
-              description="LBMA-certified physical gold vaulted in secure institutional facilities, tokenized with 1:1 backing."
-              stats="Inflation Hedge"
-              image="https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&q=80&w=800"
-            />
-            <AssetCard 
-              icon={<Leaf className="w-7 h-7" />}
-              title="Carbon Credits"
-              description="High-integrity nature-based carbon removals verified by global environmental standards."
-              stats="High Growth"
-              image="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=800"
-            />
+            {[
+              {
+                icon: <Building2 className="w-7 h-7" />,
+                title: "Real Estate",
+                description: "Direct ownership of high-yield residential and commercial properties with monthly yield distribution.",
+                stats: "8.4% APY",
+                image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800"
+              },
+              {
+                icon: <Coins className="w-7 h-7" />,
+                title: "Physical Gold",
+                description: "LBMA-certified physical gold vaulted in secure institutional facilities, tokenized with 1:1 backing.",
+                stats: "Inflation Hedge",
+                image: "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&q=80&w=800"
+              },
+              {
+                icon: <Leaf className="w-7 h-7" />,
+                title: "Carbon Credits",
+                description: "High-integrity nature-based carbon removals verified by global environmental standards.",
+                stats: "High Growth",
+                image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=800"
+              }
+            ].map((asset, i) => (
+              <motion.div
+                key={asset.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <AssetCard {...asset} />
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -161,7 +178,11 @@ export default function Home() {
       <section className="px-6 py-32 bg-slate-50 border-y border-slate-200/50">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
               <h2 className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.3em] mb-4">Financial Modeling</h2>
               <h3 className="text-4xl font-serif text-slate-900 mb-8 leading-tight">Project Your <br /> Future Wealth.</h3>
               <p className="text-slate-500 mb-10 leading-relaxed font-light">
@@ -171,10 +192,15 @@ export default function Home() {
                  <div className="px-4 py-2 bg-white rounded-lg border border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Compounding Daily</div>
                  <div className="px-4 py-2 bg-white rounded-lg border border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-widest">No Lock-up Period</div>
               </div>
-            </div>
-            <div className="bg-white p-10 rounded-2xl border border-slate-200 shadow-xl">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-white p-10 rounded-2xl border border-slate-200 shadow-xl"
+            >
                <YieldCalculator />
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -183,28 +209,44 @@ export default function Home() {
       <section id="process" className="px-6 py-32 bg-slate-50 border-y border-slate-200/50">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
               <h2 className="text-[10px] font-black text-[#C5A059] uppercase tracking-[0.3em] mb-4">Investment Lifecycle</h2>
               <h3 className="text-4xl font-serif text-slate-900 mb-10 leading-tight">Simplified On-Chain <br /> Wealth Management.</h3>
               
               <div className="space-y-12">
-                <ProcessStep 
-                  number="01"
-                  title="Verified Onboarding"
-                  description="Complete a one-time identity verification to unlock institutional-grade opportunities."
-                />
-                <ProcessStep 
-                  number="02"
-                  title="Asset Selection"
-                  description="Browse our curated registry and select assets that align with your portfolio goals."
-                />
-                <ProcessStep 
-                  number="03"
-                  title="Automated Yield"
-                  description="Earnings are distributed automatically to your wallet in real-time as they are generated."
-                />
+                {[
+                  {
+                    number: "01",
+                    title: "Verified Onboarding",
+                    description: "Complete a one-time identity verification to unlock institutional-grade opportunities."
+                  },
+                  {
+                    number: "02",
+                    title: "Asset Selection",
+                    description: "Browse our curated registry and select assets that align with your portfolio goals."
+                  },
+                  {
+                    number: "03",
+                    title: "Automated Yield",
+                    description: "Earnings are distributed automatically to your wallet in real-time as they are generated."
+                  }
+                ].map((step, i) => (
+                  <motion.div
+                    key={step.number}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <ProcessStep {...step} />
+                  </motion.div>
+                ))}
               </div>
-            </div>
+            </motion.div>
             <div className="relative group perspective-1000">
               <motion.div 
                 initial={{ rotateY: -5, rotateX: 5 }}
@@ -486,11 +528,25 @@ function YieldCalculator() {
          <div className="grid grid-cols-2 gap-8">
             <div>
                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Est. Monthly</div>
-               <div className="text-2xl font-serif text-emerald-600">${monthly.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+               <motion.div 
+                 key={monthly}
+                 initial={{ opacity: 0, y: 5 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className="text-2xl font-serif text-emerald-600"
+               >
+                 ${monthly.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+               </motion.div>
             </div>
             <div>
                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Value</div>
-               <div className="text-2xl font-serif text-slate-900">${total.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+               <motion.div 
+                 key={total}
+                 initial={{ opacity: 0, y: 5 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className="text-2xl font-serif text-slate-900"
+               >
+                 ${total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+               </motion.div>
             </div>
          </div>
       </div>
