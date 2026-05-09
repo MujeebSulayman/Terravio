@@ -106,7 +106,7 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         {/* Whitelisting Status Banner */}
-        <ComplianceBanner userAddress={user?.wallet?.address} />
+        <ComplianceBanner userAddress={user?.wallet?.address} backendUser={backendUser} />
 
         {/* Dynamic Overview Stats */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
@@ -175,10 +175,6 @@ function DistributionItem({ color, label, value }: { color: string, label: strin
     </div>
   );
 }
-
-        {/* Whitelisting Status Banner */}
-        <ComplianceBanner userAddress={user?.wallet?.address} backendUser={backendUser} />
-...
 function ComplianceBanner({ userAddress, backendUser }: { userAddress?: string, backendUser?: any }) {
   const kycStatus = backendUser?.kycStatus || "UNVERIFIED";
 
