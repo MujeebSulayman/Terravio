@@ -2,7 +2,7 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { motion } from "framer-motion";
-import { Building2, Leaf, Coins, ArrowRight, ShieldCheck, TrendingUp } from "lucide-react";
+import { Building2, Leaf, Coins, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
@@ -10,7 +10,6 @@ export default function Home() {
 
   return (
     <main className="flex-1 flex flex-col relative overflow-hidden">
-      {/* Background Gradients */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] opacity-20 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 blur-[100px] rounded-full mix-blend-screen" />
       </div>

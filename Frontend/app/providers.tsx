@@ -9,8 +9,7 @@ import { wagmiConfig } from "../lib/wagmi";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "cmori2efd008s0cjmtbb6izff"; // Fallback to provided test ID
-
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID; 
   return (
     <PrivyProvider
       appId={appId}
@@ -18,7 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         loginMethods: ["email", "wallet"],
         appearance: {
           theme: "dark",
-          accentColor: "#4f46e5", // Indigo
+          accentColor: "#4f46e5",
           logo: "https://auth.privy.io/logos/privy-logo-dark.png",
         },
       }}
