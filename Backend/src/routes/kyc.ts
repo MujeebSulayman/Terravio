@@ -1,12 +1,14 @@
 import { createHash } from "node:crypto";
 import { ethers } from "ethers";
 import { Router, type Request } from "express";
+import axios from "axios";
 import type { Env } from "../config/env";
 import { verifyDiditWebhookRequest } from "../lib/diditWebhook";
 import { HttpError } from "../lib/errors";
 import { prisma } from "../lib/prisma";
 import { fetchDiditSessionDecision } from "../services/diditSessionService";
 import { whitelistWalletOnAllTokens } from "../services/whitelistService";
+import { requirePrivyAuth } from "../middleware/requirePrivyAuth";
 
 function headerString(req: Request, name: string): string | undefined {
   const v = req.headers[name];
@@ -101,6 +103,47 @@ function isPositiveDecision(env: Env, body: Record<string, unknown>): boolean {
 
 export function kycRoutes(env: Env) {
   const r = Router();
+
+  r.post("/session", requirePrivyAuth(env), async (req, res, next) => {
+    try {
+      const privyUser = req.privyUser;
+      if (!privyUser) {
+        return next(new HttpError(401, "Authentication required", "unauthorized"));
+      }
+
+      const walletAccount = privyUser.linked_accounts.find((a) => a.type === "wallet") as any;
+      const wallet = walletAccount?.address;
+      if (!wallet) {
+        return next(new HttpError(400, "Wallet required for KYC", "wallet_required"));
+      }
+
+      // Create Didit session
+      const diditResponse = await axios.post(
+        "https://api.didit.me/v1/session/",
+        {
+          workflow_id: env.DIDIT_WORKFLOW_ID,
+          metadata: {
+            wallet_address: wallet,
+            privy_id: privyUser.id
+          }
+        },
+        {
+          headers: {
+            "Authorization": `Token ${env.DIDIT_API_KEY}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      res.json({
+        ok: true,
+        session_id: diditResponse.data.id,
+        url: diditResponse.data.url
+      });
+    } catch (e) {
+      next(e);
+    }
+  });
 
   r.post("/didit-webhook", async (req, res, next) => {
     try {
