@@ -9,11 +9,15 @@ import { wagmiConfig } from "../lib/wagmi";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "cl_placeholder_id";
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
   
+  if (!appId || appId === "cl_placeholder_id") {
+    console.warn("⚠️ Terravio: NEXT_PUBLIC_PRIVY_APP_ID is missing or placeholder. Persistence will NOT work.");
+  }
+
   return (
     <PrivyProvider
-      appId={appId}
+      appId={appId || "cl_placeholder_id"}
       config={{
         loginMethods: ["email", "wallet"],
         appearance: {

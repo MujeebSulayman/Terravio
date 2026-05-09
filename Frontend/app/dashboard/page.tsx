@@ -52,8 +52,6 @@ export default function Dashboard() {
           });
           const data = await res.json();
           setBackendUser(data);
-          // Store token for other calls if needed
-          if (token) window.localStorage.setItem('privy:token', token);
         } catch (e) {
           console.error("User sync failed:", e);
         } finally {

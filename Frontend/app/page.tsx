@@ -19,10 +19,19 @@ import {
   Activity
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  const { login, authenticated } = usePrivy();
+  const { login, authenticated, ready } = usePrivy();
+  const router = useRouter();
+
+  // Auto-redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (ready && authenticated) {
+      router.push("/dashboard");
+    }
+  }, [ready, authenticated, router]);
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] text-slate-900 selection:bg-amber-100 selection:text-amber-900 overflow-x-hidden">
