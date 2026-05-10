@@ -123,7 +123,6 @@ export function kycRoutes(env: Env) {
         return next(new HttpError(400, "Wallet required for KYC", "wallet_required"));
       }
 
-      // Create Didit session
       let diditResponse;
       try {
         const frontendUrl = req.headers.origin || env.FRONTEND_URL;
@@ -181,22 +180,17 @@ export function kycRoutes(env: Env) {
         const rawBody = req.rawBody;
 
         if (!signatureV2 || !rawBody) {
-          console.error("[Didit Webhook] Missing signature or raw body");
           return next(new HttpError(401, "Invalid Didit webhook request", "didit_invalid_request"));
         }
 
         const hmac = createHmac("sha256", env.DIDIT_WEBHOOK_SECRET);
         hmac.update(rawBody);
-        const calculatedSignature = hmac.digest("hex");
-
-        // Use constant-time comparison
         const isVerified = timingSafeEqual(
           Buffer.from(signatureV2, "hex"),
-          Buffer.from(calculatedSignature, "hex")
+          Buffer.from(hmac.digest("hex"), "hex")
         );
 
         if (!isVerified) {
-          console.error("[Didit Webhook] Signature mismatch");
           return next(new HttpError(401, "Invalid Didit webhook signature", "didit_signature"));
         }
       } else if (env.NODE_ENV === "production") {

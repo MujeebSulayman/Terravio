@@ -46,14 +46,12 @@ export function requirePrivyAuth(env: Env) {
     try {
       const claims = await privy.utils().auth().verifyAccessToken(token);
       req.privyUserId = claims.user_id;
-      
-      const fullUser = await (privy as any).usersService.get(claims.user_id);
-      req.privyUser = fullUser;
+      req.privyUser = await (privy as any).usersService.get(claims.user_id);
     } catch (e) {
       if (e instanceof InvalidAuthTokenError) {
         return next(new HttpError(401, "Invalid or expired token", "invalid_token"));
       }
-      throw e;
+      return next(e);
     }
 
     next();

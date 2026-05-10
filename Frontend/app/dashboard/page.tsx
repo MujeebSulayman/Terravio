@@ -41,7 +41,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     const syncUser = async () => {
+      console.log("🛠️ Sync Debug:", { ready, authenticated, hasUser: !!user });
       if (authenticated && user) {
+        console.log("🚀 Frontend: Starting Sync...");
         setIsSyncing(true);
         try {
           const token = await getAccessToken();

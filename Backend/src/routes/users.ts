@@ -22,14 +22,7 @@ export function usersRoutes(env: Env) {
       }
 
       let user;
-      if (env.DEV_SKIP_AUTH && env.NODE_ENV === "development" && privyId.startsWith("dev:")) {
-        const wallet = privyId.slice(4);
-        user = await prisma.user.upsert({
-          where: { privyId },
-          create: { privyId, walletAddress: wallet },
-          update: { walletAddress: wallet },
-        });
-      } else if (req.privyUser) {
+      if (req.privyUser) {
         user = await upsertUserFromPrivy(req.privyUser);
       } else {
         user = await prisma.user.findUnique({ where: { privyId } });
