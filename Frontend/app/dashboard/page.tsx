@@ -127,12 +127,7 @@ export default function Dashboard() {
             <h1 className="text-xl font-serif font-bold text-slate-900">Institutional Dashboard</h1>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Premium RWA Asset Management</p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="h-10 px-4 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 border border-emerald-100">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Base Sepolia
-            </div>
-          </div>
+
         </header>
 
         <div className="p-10 max-w-7xl mx-auto w-full">

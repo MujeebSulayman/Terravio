@@ -85,7 +85,7 @@ export default function VerifyPage() {
             </div>
             <div className="flex gap-4">
               <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-400 flex-shrink-0 flex items-center justify-center text-xs font-bold">3</div>
-              <p className="text-sm text-slate-400">Automatic Whitelisting on Base Sepolia</p>
+              <p className="text-sm text-slate-400">Automatic Whitelisting on Base</p>
             </div>
           </div>
 
