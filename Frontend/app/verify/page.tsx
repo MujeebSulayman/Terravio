@@ -27,12 +27,16 @@ export default function VerifyPage() {
         return;
       }
       
+      const email = user?.email?.address || user?.linkedAccounts.find(a => a.type === 'email')?.address;
+      const wallet = user?.wallet?.address || user?.linkedAccounts.find(a => a.type === 'wallet')?.address;
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/kyc/session`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ email, wallet })
       });
 
       const data = await response.json();

@@ -44,9 +44,12 @@ export function requirePrivyAuth(env: Env) {
       return next(new HttpError(500, "Privy is not configured", "privy_unconfigured"));
     }
     try {
+      console.log(`[Auth] Verifying token for: ${req.url}`);
       const claims = await (privy as any).utilsService._auth.verifyAccessToken(token);
       req.privyUserId = claims.userId || (claims as any).user_id;
+      console.log(`[Auth] ✅ Success for ${req.privyUserId}`);
     } catch (e: any) {
+      console.error(`[Auth] ❌ Failed for ${req.url}:`, e.message);
       if (e instanceof InvalidAuthTokenError) {
         return next(new HttpError(401, "Invalid or expired token", "invalid_token"));
       }

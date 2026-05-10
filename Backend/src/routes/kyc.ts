@@ -109,18 +109,33 @@ export function kycRoutes(env: Env) {
 
   r.post("/api/kyc/session", requirePrivyAuth(env), async (req, res, next) => {
     try {
-      const privyUser = req.privyUser;
-      if (!privyUser) {
-        return next(new HttpError(401, "Authentication required", "unauthorized"));
+      const { email, wallet: bodyWallet } = req.body;
+      
+      let user = await prisma.user.findUnique({
+        where: { privyId: req.privyUserId! }
+      });
+
+      if (!user) {
+        // Auto-sync if user doesn't exist yet
+        user = await prisma.user.create({
+          data: { 
+            privyId: req.privyUserId!,
+            email: email || undefined,
+            walletAddress: bodyWallet || undefined
+          }
+        });
+        console.log(`[KYC] Auto-created user for session: ${user.id} (${email || 'No email'})`);
+      } else if (!user.walletAddress && bodyWallet) {
+        // Update wallet if it was missing
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { walletAddress: bodyWallet }
+        });
       }
 
-      const { upsertUserFromPrivy } = require("../services/userService");
-      const user = await upsertUserFromPrivy(privyUser);
-
-      const walletAccount = privyUser.linked_accounts.find((a) => a.type === "wallet") as any;
-      const wallet = walletAccount?.address;
+      const wallet = user.walletAddress;
       if (!wallet) {
-        return next(new HttpError(400, "Wallet required for KYC", "wallet_required"));
+        return next(new HttpError(400, "Wallet required for KYC. Please sync your wallet in the dashboard first.", "wallet_required"));
       }
 
       let diditResponse;
