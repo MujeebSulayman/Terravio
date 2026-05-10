@@ -12,16 +12,15 @@ import { protocolRoutes } from "./routes/protocol";
 export function createApp(env: Env) {
   const app = express();
 
-  app.use(
-    cors({
-      origin:
-        env.CORS_ORIGINS.length > 0
-          ? env.CORS_ORIGINS
-          : env.NODE_ENV === "development"
-            ? true
-            : false,
-    })
-  );
+  app.use(cors({
+    origin: env.NODE_ENV === "development" ? true : env.CORS_ORIGINS,
+    credentials: true
+  }));
+
+  app.use((req, _res, next) => {
+    console.log(`[Incoming Request] ${req.method} ${req.url}`);
+    next();
+  });
 
   app.use(express.json({ 
     limit: "2mb",

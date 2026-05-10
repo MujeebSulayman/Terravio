@@ -44,10 +44,19 @@ export function requirePrivyAuth(env: Env) {
       return next(new HttpError(500, "Privy is not configured", "privy_unconfigured"));
     }
     try {
-      const claims = await privy.utils().auth().verifyAccessToken(token);
-      req.privyUserId = claims.user_id;
-      req.privyUser = await (privy as any).usersService.get(claims.user_id);
-    } catch (e) {
+      const claims = await (privy as any).utilsService._auth.verifyAccessToken(token);
+      const userId = claims.userId || (claims as any).user_id;
+      console.log("✅ Security: Token verified for", userId);
+      req.privyUserId = userId;
+      
+      try {
+        req.privyUser = await (privy as any).usersService.get(userId);
+        console.log("✅ Profile: Fetched from Privy");
+      } catch (err: any) {
+        console.warn("⚠️ Profile: Fetch failed (using ID only):", err.message);
+      }
+    } catch (e: any) {
+      console.error("❌ Security: Verification failed:", e.message);
       if (e instanceof InvalidAuthTokenError) {
         return next(new HttpError(401, "Invalid or expired token", "invalid_token"));
       }

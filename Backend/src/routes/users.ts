@@ -14,18 +14,33 @@ export function usersRoutes(env: Env) {
   const r = Router();
   r.use(requirePrivyAuth(env));
 
-  r.get("/me", async (req, res, next) => {
+  r.all("/me", async (req, res, next) => {
     try {
       const privyId = req.privyUserId;
       if (!privyId) {
         return next(new HttpError(401, "Not authenticated", "unauthorized"));
       }
 
+      const { email, wallet } = req.body;
+
       let user;
       if (req.privyUser) {
         user = await upsertUserFromPrivy(req.privyUser);
       } else {
-        user = await prisma.user.findUnique({ where: { privyId } });
+        // Use data from frontend if profile fetch failed
+        user = await prisma.user.upsert({
+          where: { privyId },
+          create: { 
+            privyId,
+            email: email || undefined,
+            walletAddress: wallet || undefined
+          },
+          update: {
+            email: email || undefined,
+            walletAddress: wallet || undefined
+          }
+        });
+        console.log(`[User Service] Synced user from Frontend Data: ${user.id} (${email || 'No email'})`);
       }
 
       if (!user) {

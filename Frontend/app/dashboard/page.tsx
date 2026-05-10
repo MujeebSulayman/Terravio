@@ -47,10 +47,16 @@ export default function Dashboard() {
         setIsSyncing(true);
         try {
           const token = await getAccessToken();
+          const email = user.email?.address || user.linkedAccounts.find(a => a.type === 'email')?.address;
+          const wallet = user.wallet?.address || user.linkedAccounts.find(a => a.type === 'wallet')?.address;
+
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, {
+            method: 'POST',
             headers: {
-              'Authorization': `Bearer ${token}`
-            }
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, wallet })
           });
           const data = await res.json();
           setBackendUser(data);

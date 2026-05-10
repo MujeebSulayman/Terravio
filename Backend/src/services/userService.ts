@@ -27,10 +27,16 @@ export async function upsertUserFromPrivy(privyUser: PrivyUser) {
 
   // 3. Upsert based on whatever we found (or create new)
   if (user) {
+    if (user.privyId !== privyUser.id) {
+      console.log(`[User Service] Merging account for email ${email}: Linking Privy ID ${privyUser.id} to existing User ${user.id}`);
+    } else {
+      console.log(`[User Service] Syncing returning user: ${user.id} (${email || 'No email'})`);
+    }
+
     return prisma.user.update({
       where: { id: user.id },
       data: {
-        privyId: privyUser.id, // Update privyId in case we matched by email
+        privyId: privyUser.id,
         email: email ?? undefined,
         walletAddress: wallet ?? undefined,
       },
@@ -38,6 +44,7 @@ export async function upsertUserFromPrivy(privyUser: PrivyUser) {
   }
 
   // 4. Create brand new user if no match at all
+  console.log(`[User Service] Creating NEW user for Privy ID: ${privyUser.id} (${email || 'No email'})`);
   return prisma.user.create({
     data: {
       privyId: privyUser.id,
