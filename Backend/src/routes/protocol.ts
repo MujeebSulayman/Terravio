@@ -2,9 +2,24 @@ import { Router } from "express";
 import { ProtocolService } from "../services/ProtocolService";
 import type { Env } from "../config/env";
 
+import { prisma } from "../lib/prisma";
+
 export const protocolRoutes = (env: Env) => {
   const router = Router();
   const service = new ProtocolService(env);
+
+  /**
+   * GET /api/protocol/assets
+   * Returns all off-chain asset metadata/inventory.
+   */
+  router.get("/assets", async (req, res, next) => {
+    try {
+      const assets = await prisma.asset.findMany();
+      res.json({ success: true, data: assets });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   /**
    * GET /api/protocol/health
