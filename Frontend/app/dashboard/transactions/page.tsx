@@ -15,7 +15,6 @@ export default function TransactionsPage() {
     );
   }
 
-  // Mock transactions for now - would normally fetch from backend or subgraphs
   const transactions = [
     { id: "1", type: "deposit", asset: "LBMA Gold", amount: "$50,000", status: "completed", date: "May 10, 2026", hash: "0x123...abc" },
     { id: "2", type: "claim", asset: "Residential Pool", amount: "$240.50", status: "completed", date: "May 08, 2026", hash: "0x456...def" },
