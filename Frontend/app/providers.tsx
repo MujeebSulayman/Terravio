@@ -12,7 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
   
   if (!appId || appId === "cl_placeholder_id") {
-    console.warn("⚠️ Terravio: NEXT_PUBLIC_PRIVY_APP_ID is missing or placeholder. Persistence will NOT work.");
+    console.warn("Terravio: NEXT_PUBLIC_PRIVY_APP_ID is missing or placeholder. Persistence will NOT work.");
   }
 
   return (
