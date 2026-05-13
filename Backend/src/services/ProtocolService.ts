@@ -1,14 +1,58 @@
 import { ethers } from "ethers";
 import type { Env } from "../config/env";
-import { BASE_RWA_WHITELIST_ABI } from "../abis/baseRWAToken"; // We can reuse this or create a full ABI
 import { getConfiguredRwaTokens } from "../lib/rwaTokens";
 
-// Full ABI for administrative functions
-const PROTOCOL_ADMIN_ABI = [
-  "function depositYield(uint256 amount) external",
-  "function setAssetStatus(uint8 status) external",
-  "function getAssetMetadata() external view returns (tuple(uint8 assetType, uint8 status, string name, string symbol, string ipfsCID, uint256 valuationUSD, uint256 yieldBPS, uint64 lastUpdated, uint256 totalIssuance))",
-];
+// Full JSON ABI for BaseRWAToken — matches the deployed contract exactly.
+// getAssetMetadata returns AssetMetadata:
+//   (uint8 assetType, uint8 status, string name, string symbol, string ipfsCID,
+//    uint256 valuationUSD, uint256 yieldBPS, uint64 lastUpdated, uint256 totalIssuance)
+const PROTOCOL_ABI = [
+  {
+    name: "getAssetMetadata",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "tuple",
+        components: [
+          { name: "assetType",    type: "uint8"   },
+          { name: "status",       type: "uint8"   },
+          { name: "name",         type: "string"  },
+          { name: "symbol",       type: "string"  },
+          { name: "ipfsCID",      type: "string"  },
+          { name: "valuationUSD", type: "uint256" },
+          { name: "yieldBPS",     type: "uint256" },
+          { name: "lastUpdated",  type: "uint64"  },
+          { name: "totalIssuance",type: "uint256" },
+        ],
+      },
+    ],
+  },
+  {
+    name: "depositYield",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "amount", type: "uint256" }],
+    outputs: [],
+  },
+  {
+    name: "setAssetStatus",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "status", type: "uint8" }],
+    outputs: [],
+  },
+] as const;
+
+// Maps uint8 AssetStatus enum → human-readable string
+const ASSET_STATUS: Record<number, string> = {
+  0: "PENDING",
+  1: "ACTIVE",
+  2: "PAUSED",
+  3: "REDEEMED",
+};
 
 export class ProtocolService {
   private provider: ethers.JsonRpcProvider;
@@ -19,20 +63,18 @@ export class ProtocolService {
     if (!env.KYC_MANAGER_PRIVATE_KEY) {
       throw new Error("Missing KYC_MANAGER_PRIVATE_KEY for protocol administration");
     }
-    // We'll reuse the KYC manager for now as the 'admin' for yield as well
     this.yieldSigner = new ethers.Wallet(env.KYC_MANAGER_PRIVATE_KEY, this.provider);
   }
 
   /**
    * Triggers a yield distribution for a specific RWA token.
-   * In production, this would be called by a cron job or after a fiat payment confirmation.
    */
   async distributeYield(tokenAddress: string, amountUSD: number) {
     const amountInWei = ethers.parseUnits(amountUSD.toString(), 18);
-    const contract = new ethers.Contract(tokenAddress, PROTOCOL_ADMIN_ABI, this.yieldSigner);
+    const contract = new ethers.Contract(tokenAddress, PROTOCOL_ABI, this.yieldSigner);
 
     console.log(`[ProtocolService] Distributing $${amountUSD} yield to ${tokenAddress}...`);
-    
+
     try {
       const tx = await contract.depositYield(amountInWei);
       const receipt = await tx.wait();
@@ -44,25 +86,42 @@ export class ProtocolService {
   }
 
   /**
-   * Fetches the current live status of all RWA tokens from the blockchain.
+   * Fetches the current live on-chain status of all configured RWA tokens.
+   * Individual failures are caught and reported so one bad contract
+   * doesn't break the entire health endpoint.
    */
   async getGlobalHealth() {
     const tokens = getConfiguredRwaTokens(this.env);
-    const health = await Promise.all(tokens.map(async (token) => {
-      const contract = new ethers.Contract(token.address, PROTOCOL_ADMIN_ABI, this.provider);
-      try {
-        const metadata = await contract.getAssetMetadata();
-        return {
-          address: token.address,
-          name: metadata.name,
-          status: metadata.status, // 0 = Inactive, 1 = Active, etc.
-          valuation: ethers.formatUnits(metadata.valuationUSD, 18),
-          lastUpdated: new Date(Number(metadata.lastUpdated) * 1000).toISOString()
-        };
-      } catch (e) {
-        return { address: token.address, error: "Failed to fetch metadata" };
-      }
-    }));
+
+    const health = await Promise.all(
+      tokens.map(async (token) => {
+        const contract = new ethers.Contract(token.address, PROTOCOL_ABI, this.provider);
+        try {
+          const metadata = await contract.getAssetMetadata();
+          return {
+            address:     token.address,
+            name:        metadata.name,
+            symbol:      metadata.symbol,
+            status:      Number(metadata.status),        // 0=PENDING,1=ACTIVE,2=PAUSED,3=REDEEMED
+            statusLabel: ASSET_STATUS[Number(metadata.status)] || "UNKNOWN",
+            valuation:   ethers.formatUnits(metadata.valuationUSD, 18),
+            yieldBPS:    Number(metadata.yieldBPS),
+            apyPercent:  (Number(metadata.yieldBPS) / 100).toFixed(2),
+            totalIssuance: ethers.formatUnits(metadata.totalIssuance, 18),
+            lastUpdated: metadata.lastUpdated > 0n
+              ? new Date(Number(metadata.lastUpdated) * 1000).toISOString()
+              : null,
+          };
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error(`[ProtocolService] Failed to fetch metadata for ${token.address}:`, msg);
+          return {
+            address: token.address,
+            error: "Contract call failed — contract may be uninitialized or RPC unavailable",
+          };
+        }
+      })
+    );
 
     return health;
   }

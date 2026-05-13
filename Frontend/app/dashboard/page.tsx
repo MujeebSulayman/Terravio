@@ -4,33 +4,22 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { Loader2, History, ChevronRight } from "lucide-react";
 import { TOKENS } from "../../lib/constants";
+import { useProtocolData } from "../../lib/hooks/useProtocolData";
 import { OverviewStats } from "../../components/dashboard/OverviewStats";
 import { ComplianceBanner } from "../../components/dashboard/ComplianceBanner";
 import { AssetCard } from "../../components/dashboard/AssetCard";
 import { InventoryList } from "../../components/dashboard/InventoryList";
 import { ProtocolComposition } from "../../components/dashboard/ProtocolComposition";
 import { DashboardHeader } from "../../components/dashboard/DashboardHeader";
+import Link from "next/link";
 
 export default function DashboardOverview() {
   const { ready, authenticated, user, getAccessToken } = usePrivy();
   const [backendUser, setBackendUser] = useState<any>(null);
-  const [assets, setAssets] = useState<any[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  useEffect(() => {
-    const fetchAssets = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/protocol/assets`);
-        const data = await res.json();
-        if (data.success) {
-          setAssets(data.data);
-        }
-      } catch (e) {
-        console.error("Failed to fetch assets:", e);
-      }
-    };
-    fetchAssets();
-  }, []);
+  // Live RWA data from backend + on-chain
+  const { assets, isLoading: isAssetsLoading } = useProtocolData();
 
   useEffect(() => {
     const syncUser = async () => {
@@ -82,16 +71,20 @@ export default function DashboardOverview() {
 
         {/* Global Statistics */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <OverviewStats backendUser={backendUser} assets={assets} />
+          <OverviewStats 
+            backendUser={backendUser} 
+            assets={assets} 
+            isLoading={isAssetsLoading} 
+          />
         </section>
 
         {/* Composition Chart */}
-        <ProtocolComposition assets={assets} />
+        <ProtocolComposition assets={assets} isLoading={isAssetsLoading} />
 
         {/* Live Inventory */}
-        <InventoryList assets={assets} />
+        <InventoryList assets={assets} isLoading={isAssetsLoading} />
 
-        {/* Featured Opportunities */}
+        {/* Investment Registry */}
         <section className="mb-16">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-6">
             <div>
@@ -99,14 +92,14 @@ export default function DashboardOverview() {
               <p className="text-slate-500 text-sm font-medium">Verified liquidity pools backed by tangible global assets.</p>
             </div>
             <div className="flex gap-4">
-               <button className="h-12 px-6 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-[10px] uppercase tracking-widest hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm flex items-center gap-2">
+               <Link href="/dashboard/transactions" className="h-12 px-6 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-[10px] uppercase tracking-widest hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm flex items-center gap-2">
                 <History className="w-4 h-4" />
                 Audit Logs
-              </button>
-              <button className="h-12 px-6 rounded-xl bg-slate-900 text-white font-bold text-[10px] uppercase tracking-widest hover:bg-[#C5A059] transition-all shadow-xl shadow-slate-200 flex items-center gap-2">
+              </Link>
+              <Link href="/dashboard/marketplace" className="h-12 px-6 rounded-xl bg-slate-900 text-white font-bold text-[10px] uppercase tracking-widest hover:bg-[#C5A059] transition-all shadow-xl shadow-slate-200 flex items-center gap-2">
                 Marketplace
                 <ChevronRight className="w-4 h-4" />
-              </button>
+              </Link>
             </div>
           </div>
 
