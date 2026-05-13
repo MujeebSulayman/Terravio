@@ -19,7 +19,7 @@ export default function DashboardOverview() {
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Live RWA data from backend + on-chain
-  const { assets, isLoading: isAssetsLoading } = useProtocolData();
+  const { assets, isLoading: isAssetsLoading, totalValuationUSD, avgApyPercent } = useProtocolData();
 
   useEffect(() => {
     const syncUser = async () => {
@@ -73,7 +73,8 @@ export default function DashboardOverview() {
         <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
           <OverviewStats 
             backendUser={backendUser} 
-            assets={assets} 
+            totalValuationUSD={totalValuationUSD}
+            avgApyPercent={avgApyPercent}
             isLoading={isAssetsLoading} 
           />
         </section>

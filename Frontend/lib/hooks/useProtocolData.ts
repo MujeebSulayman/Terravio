@@ -21,18 +21,29 @@ export type RwaAsset = {
   };
   // Enriched from on-chain health endpoint
   onChain?: {
-    valuation: string;      // formatted USD string e.g. "1250000.00"
-    lastUpdated: string;    // ISO timestamp
+    name: string;
+    symbol: string;
+    valuation: string;       // formatted USD string — 18-decimal normalised, e.g. "500000.0"
+    yieldBPS: number;        // raw basis points e.g. 800
+    apyPercent: string;      // e.g. "8.00"
+    totalIssuance: string;   // formatted token supply
+    lastUpdated: string | null; // ISO timestamp or null if never updated
     isActive: boolean;
+    statusLabel: string;     // "ACTIVE" | "PENDING" | "PAUSED" | "REDEEMED"
   };
 };
 
 type ProtocolHealth = {
   address: string;
   name?: string;
+  symbol?: string;
   valuation?: string;
-  lastUpdated?: string;
+  yieldBPS?: number;
+  apyPercent?: string;
+  totalIssuance?: string;
+  lastUpdated?: string | null;
   status?: number;
+  statusLabel?: string;
   error?: string;
 };
 
@@ -41,6 +52,10 @@ type UseProtocolDataReturn = {
   isLoading: boolean;
   error: string | null;
   refetch: () => void;
+  /** Total protocol valuation in USD (sum of on-chain valuations) */
+  totalValuationUSD: number;
+  /** Weighted average APY from on-chain yieldBPS */
+  avgApyPercent: string;
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -86,7 +101,6 @@ export function useProtocolData(): UseProtocolDataReturn {
           });
         }
       } else {
-        // Health endpoint may fail if RPC is unavailable — that's non-fatal
         console.warn("[useProtocolData] On-chain health unavailable; using off-chain data only");
       }
 
@@ -97,9 +111,15 @@ export function useProtocolData(): UseProtocolDataReturn {
           ...asset,
           onChain: health && !health.error
             ? {
-                valuation: health.valuation || "0",
-                lastUpdated: health.lastUpdated || new Date().toISOString(),
-                isActive: health.status === 1,
+                name:          health.name || asset.name,
+                symbol:        health.symbol || asset.symbol,
+                valuation:     health.valuation || "0",
+                yieldBPS:      health.yieldBPS ?? 0,
+                apyPercent:    health.apyPercent || "0.00",
+                totalIssuance: health.totalIssuance || "0",
+                lastUpdated:   health.lastUpdated || null,
+                isActive:      health.status === 1,
+                statusLabel:   health.statusLabel || "UNKNOWN",
               }
             : undefined,
         };
@@ -119,5 +139,23 @@ export function useProtocolData(): UseProtocolDataReturn {
     fetchData();
   }, [fetchData]);
 
-  return { assets, isLoading, error, refetch: fetchData };
+  // Derived aggregates — computed from enriched assets
+  const totalValuationUSD = assets.reduce((sum, a) => {
+    const val = a.onChain?.valuation ? parseFloat(a.onChain.valuation) : 0;
+    return sum + val;
+  }, 0);
+
+  const avgApyPercent = (() => {
+    const withOnChain = assets.filter((a) => a.onChain && a.onChain.yieldBPS > 0);
+    if (withOnChain.length === 0) {
+      // Fall back to registry APY
+      if (assets.length === 0) return "—";
+      const avg = assets.reduce((s, a) => s + (a.apy || 0), 0) / assets.length;
+      return avg.toFixed(1);
+    }
+    const avg = withOnChain.reduce((s, a) => s + (a.onChain!.yieldBPS / 100), 0) / withOnChain.length;
+    return avg.toFixed(2);
+  })();
+
+  return { assets, isLoading, error, refetch: fetchData, totalValuationUSD, avgApyPercent };
 }

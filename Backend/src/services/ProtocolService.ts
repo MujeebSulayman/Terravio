@@ -2,10 +2,6 @@ import { ethers } from "ethers";
 import type { Env } from "../config/env";
 import { getConfiguredRwaTokens } from "../lib/rwaTokens";
 
-// Full JSON ABI for BaseRWAToken — matches the deployed contract exactly.
-// getAssetMetadata returns AssetMetadata:
-//   (uint8 assetType, uint8 status, string name, string symbol, string ipfsCID,
-//    uint256 valuationUSD, uint256 yieldBPS, uint64 lastUpdated, uint256 totalIssuance)
 const PROTOCOL_ABI = [
   {
     name: "getAssetMetadata",
@@ -46,7 +42,6 @@ const PROTOCOL_ABI = [
   },
 ] as const;
 
-// Maps uint8 AssetStatus enum → human-readable string
 const ASSET_STATUS: Record<number, string> = {
   0: "PENDING",
   1: "ACTIVE",
@@ -66,9 +61,7 @@ export class ProtocolService {
     this.yieldSigner = new ethers.Wallet(env.KYC_MANAGER_PRIVATE_KEY, this.provider);
   }
 
-  /**
-   * Triggers a yield distribution for a specific RWA token.
-   */
+
   async distributeYield(tokenAddress: string, amountUSD: number) {
     const amountInWei = ethers.parseUnits(amountUSD.toString(), 18);
     const contract = new ethers.Contract(tokenAddress, PROTOCOL_ABI, this.yieldSigner);
@@ -85,11 +78,6 @@ export class ProtocolService {
     }
   }
 
-  /**
-   * Fetches the current live on-chain status of all configured RWA tokens.
-   * Individual failures are caught and reported so one bad contract
-   * doesn't break the entire health endpoint.
-   */
   async getGlobalHealth() {
     const tokens = getConfiguredRwaTokens(this.env);
 

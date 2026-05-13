@@ -9,7 +9,7 @@ import { DashboardHeader } from "../../../components/dashboard/DashboardHeader";
 
 export default function PortfolioPage() {
   const { ready, authenticated, user } = usePrivy();
-  const { assets, isLoading: isAssetsLoading } = useProtocolData();
+  const { assets, isLoading: isAssetsLoading, totalValuationUSD, avgApyPercent } = useProtocolData();
 
   if (!ready || !authenticated) {
     return (
@@ -19,15 +19,6 @@ export default function PortfolioPage() {
     );
   }
 
-  // Compute total on-chain valuation for the portfolio header
-  const totalValuation = assets.reduce((sum, a) => {
-    const val = a.onChain?.valuation ? parseFloat(a.onChain.valuation) : 0;
-    return sum + val;
-  }, 0);
-
-  const avgApy = assets.length > 0
-    ? (assets.reduce((s, a) => s + (a.apy || 0), 0) / assets.length).toFixed(1)
-    : "—";
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -52,11 +43,11 @@ export default function PortfolioPage() {
                 ) : (
                   <>
                     <span className="text-5xl font-serif font-bold">
-                      ${totalValuation > 0
-                        ? totalValuation.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                      ${totalValuationUSD > 0
+                        ? totalValuationUSD.toLocaleString(undefined, { maximumFractionDigits: 0 })
                         : "—"}
                     </span>
-                    {totalValuation > 0 && (
+                    {totalValuationUSD > 0 && (
                       <span className="text-emerald-400 text-sm font-bold flex items-center gap-1">
                         <ArrowUpRight className="w-4 h-4" />
                         Oracle Verified
@@ -86,7 +77,7 @@ export default function PortfolioPage() {
               {isAssetsLoading ? (
                 <div className="h-8 w-20 bg-slate-100 rounded-xl animate-pulse mt-1" />
               ) : (
-                <p className="text-2xl font-serif font-bold text-slate-900">{avgApy}%</p>
+                <p className="text-2xl font-serif font-bold text-slate-900">{avgApyPercent}%</p>
               )}
             </div>
             <div className="mt-6 h-1 w-full bg-slate-50 rounded-full overflow-hidden">
