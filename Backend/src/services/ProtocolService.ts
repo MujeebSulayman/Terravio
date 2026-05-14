@@ -90,7 +90,7 @@ export class ProtocolService {
             address:     token.address,
             name:        metadata.name,
             symbol:      metadata.symbol,
-            status:      Number(metadata.status),        // 0=PENDING,1=ACTIVE,2=PAUSED,3=REDEEMED
+            status:      Number(metadata.status),
             statusLabel: ASSET_STATUS[Number(metadata.status)] || "UNKNOWN",
             valuation:   ethers.formatUnits(metadata.valuationUSD, 18),
             yieldBPS:    Number(metadata.yieldBPS),

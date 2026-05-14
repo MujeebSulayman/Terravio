@@ -137,7 +137,8 @@ export function useProtocolData(): UseProtocolDataReturn {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Derived aggregates — computed from enriched assets
   const totalValuationUSD = assets.reduce((sum, a) => {
