@@ -3,7 +3,6 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { Loader2, History, ChevronRight } from "lucide-react";
-import { TOKENS } from "../../lib/constants";
 import { useProtocolData } from "../../lib/hooks/useProtocolData";
 import { OverviewStats } from "../../components/dashboard/OverviewStats";
 import { ComplianceBanner } from "../../components/dashboard/ComplianceBanner";
