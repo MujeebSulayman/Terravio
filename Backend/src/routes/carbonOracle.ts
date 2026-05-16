@@ -18,12 +18,15 @@ export function carbonOracleRoutes(env: Env) {
       if (!id) {
         return next(new HttpError(400, "Missing carbon id", "bad_request"));
       }
+
       const data = await getCarbonStatusByExternalId(id);
       if (!data) {
         return next(new HttpError(404, "Carbon asset not found", "not_found"));
       }
+
       res.json({ status: data.status, quantity: data.quantity });
     } catch (e) {
+      console.error(`[carbonOracle] Error for ${req.params.id}:`, e);
       next(e);
     }
   });

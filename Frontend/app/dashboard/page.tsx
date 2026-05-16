@@ -105,9 +105,19 @@ export default function DashboardOverview() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {TOKENS.map((token) => (
-              <AssetCard key={token.id} token={token} userAddress={user?.wallet?.address} />
-            ))}
+            {isAssetsLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-[400px] bg-white rounded-2xl border border-slate-100 animate-pulse" />
+              ))
+            ) : assets.length === 0 ? (
+              <div className="col-span-full h-48 flex items-center justify-center bg-white rounded-3xl border border-dashed border-slate-200 text-slate-400">
+                <p className="text-xs font-bold uppercase tracking-[0.2em]">No Active Investment Pools</p>
+              </div>
+            ) : (
+              assets.map((asset) => (
+                <AssetCard key={asset.id} token={asset} userAddress={user?.wallet?.address} />
+              ))
+            )}
           </div>
         </section>
       </div>

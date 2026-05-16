@@ -14,10 +14,10 @@ import {
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { BaseRWATokenABI, ERC20ABI } from "../../lib/abi";
-import { TOKENS } from "../../lib/constants";
+import type { RwaAsset } from "../../lib/hooks/useProtocolData";
 
 interface AssetCardProps {
-  token: typeof TOKENS[0];
+  token: RwaAsset;
   userAddress?: string;
 }
 

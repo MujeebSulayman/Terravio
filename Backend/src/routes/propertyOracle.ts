@@ -18,9 +18,11 @@ export function propertyOracleRoutes(env: Env) {
       if (!id) {
         return next(new HttpError(400, "Missing property id", "bad_request"));
       }
+
       const data = await getPropertyValuationById(id, env.RENTCAST_API_KEY);
       res.json(data);
     } catch (e) {
+      console.error(`[propertyOracle] Error for ${req.params.id}:`, e);
       next(e);
     }
   });

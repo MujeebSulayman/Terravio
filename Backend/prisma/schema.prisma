@@ -53,8 +53,13 @@ model Asset {
   id         String   @id @default(cuid())
   kind       String
   externalId String
+  address    String?  @unique
+  name       String?
+  symbol     String?
   status     String
   quantity   Int?
+  apy        Float?
+  assetType  String?
   metadata   Json?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
