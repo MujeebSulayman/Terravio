@@ -143,7 +143,7 @@ export function AssetCard({ token, userAddress }: AssetCardProps) {
             <h3 className="font-serif font-bold text-xl text-slate-900 tracking-tight">{token.name}</h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-              {metadata ? metadata.symbol : "---"} • ADDR: {token.address.slice(0, 6)}...
+              {metadata ? metadata.symbol : "---"} • ADDR: {token.address?.slice(0, 6) || "0x..."}...
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">

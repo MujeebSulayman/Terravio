@@ -102,7 +102,7 @@ export default function PortfolioPage() {
                   className="w-8 h-8 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[8px] font-bold text-white uppercase shadow-sm"
                   title={t.name}
                 >
-                  {t.symbol.slice(0, 2)}
+                  {t.symbol?.slice(0, 2) || "??"}
                 </div>
               ))}
             </div>
