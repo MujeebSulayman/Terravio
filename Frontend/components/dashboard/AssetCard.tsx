@@ -26,13 +26,13 @@ export function AssetCard({ token, userAddress }: AssetCardProps) {
   const [investAmount, setInvestAmount] = useState("");
 
   const { data: metadata, refetch: refetchMetadata } = useReadContract({
-    address: token.address,
+    address: token.address as `0x${string}`,
     abi: BaseRWATokenABI,
     functionName: "getAssetMetadata",
   });
 
   const { data: balance, refetch: refetchBalance } = useReadContract({
-    address: token.address,
+    address: token.address as `0x${string}`,
     abi: BaseRWATokenABI,
     functionName: "balanceOf",
     args: userAddress ? [userAddress as `0x${string}`] : undefined,
@@ -40,21 +40,21 @@ export function AssetCard({ token, userAddress }: AssetCardProps) {
   });
 
   const { data: assetAddress } = useReadContract({
-    address: token.address,
+    address: token.address as `0x${string}`,
     abi: BaseRWATokenABI,
     functionName: "asset",
   });
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
-    address: assetAddress || zeroAddress,
+    address: (assetAddress as `0x${string}`) || zeroAddress,
     abi: ERC20ABI,
     functionName: "allowance",
-    args: userAddress && token.address ? [userAddress as `0x${string}`, token.address] : undefined,
+    args: userAddress && token.address ? [userAddress as `0x${string}`, token.address as `0x${string}`] : undefined,
     query: { enabled: !!userAddress && !!assetAddress && assetAddress !== zeroAddress }
   });
 
   const { data: isWhitelisted } = useReadContract({
-    address: token.address,
+    address: token.address as `0x${string}`,
     abi: BaseRWATokenABI,
     functionName: "isWhitelisted",
     args: userAddress ? [userAddress as `0x${string}`] : undefined,
@@ -62,7 +62,7 @@ export function AssetCard({ token, userAddress }: AssetCardProps) {
   });
 
   const { data: claimable } = useReadContract({
-    address: token.address,
+    address: token.address as `0x${string}`,
     abi: BaseRWATokenABI,
     functionName: "claimableYield",
     args: userAddress ? [userAddress as `0x${string}`] : undefined,
@@ -111,16 +111,16 @@ export function AssetCard({ token, userAddress }: AssetCardProps) {
     
     if (needsApproval) {
       approve({
-        address: assetAddress!,
+        address: assetAddress as `0x${string}`,
         abi: ERC20ABI,
         functionName: "approve",
-        args: [token.address, parseUnits(investAmount, 18)],
+        args: [token.address as `0x${string}`, parseUnits(investAmount, 18)],
       });
       return;
     }
 
     writeContract({
-      address: token.address,
+      address: token.address as `0x${string}`,
       abi: BaseRWATokenABI,
       functionName: "deposit",
       args: [parseUnits(investAmount, 18), userAddress as `0x${string}`],
@@ -129,7 +129,7 @@ export function AssetCard({ token, userAddress }: AssetCardProps) {
 
   const handleClaim = () => {
     writeContract({
-      address: token.address,
+      address: token.address as `0x${string}`,
       abi: BaseRWATokenABI,
       functionName: "claimYield",
     });
