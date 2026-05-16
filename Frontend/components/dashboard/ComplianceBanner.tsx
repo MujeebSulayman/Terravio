@@ -17,6 +17,7 @@ interface ComplianceBannerProps {
 export function ComplianceBanner({ userAddress, backendUser }: ComplianceBannerProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { getAccessToken } = usePrivy();
+  const { assets } = useProtocolData();
   const kycStatus = backendUser?.kycStatus || "UNVERIFIED";
 
   const handleRefreshStatus = async () => {
@@ -34,12 +35,13 @@ export function ComplianceBanner({ userAddress, backendUser }: ComplianceBannerP
     }
   };
 
+  // Check whitelisting status on the first available RWA token as a proxy for compliance
   const { data: isWhitelisted, isLoading } = useReadContract({
-    address: TOKENS[0].address,
+    address: (assets[0]?.address as `0x${string}`) || "0x0000000000000000000000000000000000000000",
     abi: BaseRWATokenABI,
     functionName: "isWhitelisted",
     args: userAddress ? [userAddress as `0x${string}`] : undefined,
-    query: { enabled: !!userAddress }
+    query: { enabled: !!userAddress && !!assets[0]?.address }
   });
 
   if (isLoading || isWhitelisted || kycStatus === "APPROVED") return null;

@@ -15,12 +15,7 @@ export default function TransactionsPage() {
     );
   }
 
-  const transactions = [
-    { id: "1", type: "deposit", asset: "LBMA Gold", amount: "$50,000", status: "completed", date: "May 10, 2026", hash: "0x123...abc" },
-    { id: "2", type: "claim", asset: "Residential Pool", amount: "$240.50", status: "completed", date: "May 08, 2026", hash: "0x456...def" },
-    { id: "3", type: "deposit", asset: "Carbon Credits", amount: "$10,000", status: "completed", date: "May 05, 2026", hash: "0x789...ghi" },
-    { id: "4", type: "withdrawal", asset: "LBMA Gold", amount: "$5,000", status: "completed", date: "May 02, 2026", hash: "0xabc...123" },
-  ];
+  const transactions: any[] = [];
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -42,49 +37,58 @@ export default function TransactionsPage() {
                     <th className="px-10 py-8 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Explorer</th>
                  </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
-                 {transactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors group">
-                       <td className="px-10 py-6">
-                          <div className="flex items-center gap-3">
-                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                                tx.type === 'deposit' ? 'bg-emerald-50 text-emerald-600' : 
-                                tx.type === 'claim' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'
-                             }`}>
-                                {tx.type === 'deposit' ? <ArrowDownLeft className="w-5 h-5" /> : 
-                                 tx.type === 'claim' ? <TrendingUp className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
-                             </div>
-                             <div>
-                                <p className="text-sm font-bold text-slate-900 capitalize">{tx.type}</p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">On-Chain Settlement</p>
-                             </div>
-                          </div>
-                       </td>
-                       <td className="px-10 py-6">
-                          <p className="text-sm font-bold text-slate-900">{tx.asset}</p>
-                       </td>
-                       <td className="px-10 py-6">
-                          <p className={`text-sm font-bold ${tx.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
-                             {tx.type === 'deposit' ? '+' : '-'}{tx.amount}
-                          </p>
-                       </td>
-                       <td className="px-10 py-6">
-                          <p className="text-sm font-medium text-slate-600">{tx.date}</p>
-                       </td>
-                       <td className="px-10 py-6">
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-widest border border-emerald-100">
-                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                             {tx.status}
-                          </div>
-                       </td>
-                       <td className="px-10 py-6">
-                          <a href="#" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#C5A059] hover:bg-white hover:shadow-md transition-all">
-                             <ExternalLink className="w-4 h-4" />
-                          </a>
-                       </td>
+               <tbody className="divide-y divide-slate-50">
+                  {transactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-10 py-20 text-center">
+                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No transaction records found</p>
+                        <p className="text-[10px] text-slate-400 mt-2">All settled on-chain movements will be audited here.</p>
+                      </td>
                     </tr>
-                 ))}
-              </tbody>
+                  ) : (
+                    transactions.map((tx) => (
+                      <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors group">
+                         <td className="px-10 py-6">
+                            <div className="flex items-center gap-3">
+                               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                                  tx.type === 'deposit' ? 'bg-emerald-50 text-emerald-600' : 
+                                  tx.type === 'claim' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'
+                               }`}>
+                                  {tx.type === 'deposit' ? <ArrowDownLeft className="w-5 h-5" /> : 
+                                   tx.type === 'claim' ? <TrendingUpIcon className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+                               </div>
+                               <div>
+                                  <p className="text-sm font-bold text-slate-900 capitalize">{tx.type}</p>
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">On-Chain Settlement</p>
+                               </div>
+                            </div>
+                         </td>
+                         <td className="px-10 py-6">
+                            <p className="text-sm font-bold text-slate-900">{tx.asset}</p>
+                         </td>
+                         <td className="px-10 py-6">
+                            <p className={`text-sm font-bold ${tx.type === 'deposit' ? 'text-emerald-600' : 'text-slate-900'}`}>
+                               {tx.type === 'deposit' ? '+' : '-'}{tx.amount}
+                            </p>
+                         </td>
+                         <td className="px-10 py-6">
+                            <p className="text-sm font-medium text-slate-600">{tx.date}</p>
+                         </td>
+                         <td className="px-10 py-6">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-widest border border-emerald-100">
+                               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                               {tx.status}
+                            </div>
+                         </td>
+                         <td className="px-10 py-6">
+                            <a href="#" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-[#C5A059] hover:bg-white hover:shadow-md transition-all">
+                               <ExternalLink className="w-4 h-4" />
+                            </a>
+                         </td>
+                      </tr>
+                    ))
+                  )}
+               </tbody>
            </table>
            <div className="p-10 border-t border-slate-50 bg-slate-50/30 flex justify-center">
               <button className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] hover:text-slate-900 transition-colors">Load More Records</button>
