@@ -77,14 +77,8 @@ export default function DashboardOverview() {
             isLoading={isAssetsLoading} 
           />
         </section>
-
-        {/* Composition Chart */}
         <ProtocolComposition assets={assets} isLoading={isAssetsLoading} />
-
-        {/* Live Inventory */}
         <InventoryList assets={assets} isLoading={isAssetsLoading} />
-
-        {/* Investment Registry */}
         <section className="mb-16">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-6">
             <div>
