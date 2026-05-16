@@ -2,7 +2,6 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { Loader2, TrendingUp, Wallet, ArrowUpRight } from "lucide-react";
-import { TOKENS } from "../../../lib/constants";
 import { useProtocolData } from "../../../lib/hooks/useProtocolData";
 import { AssetCard } from "../../../components/dashboard/AssetCard";
 import { DashboardHeader } from "../../../components/dashboard/DashboardHeader";
@@ -97,12 +96,13 @@ export default function PortfolioPage() {
               </p>
             </div>
             <div className="mt-6 flex -space-x-2">
-              {TOKENS.map((t, i) => (
+              {assets.map((t, i) => (
                 <div
                   key={i}
-                  className="w-8 h-8 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[8px] font-bold text-white uppercase"
+                  className="w-8 h-8 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[8px] font-bold text-white uppercase shadow-sm"
+                  title={t.name}
                 >
-                  {t.id.slice(0, 2)}
+                  {t.symbol.slice(0, 2)}
                 </div>
               ))}
             </div>
@@ -113,9 +113,19 @@ export default function PortfolioPage() {
         <div className="mb-12">
           <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight mb-8">Active Positions</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {TOKENS.map((token) => (
-              <AssetCard key={token.id} token={token} userAddress={user?.wallet?.address} />
-            ))}
+            {isAssetsLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-[400px] bg-white rounded-2xl border border-slate-100 animate-pulse" />
+              ))
+            ) : assets.length === 0 ? (
+              <div className="col-span-full h-48 flex items-center justify-center bg-white rounded-3xl border border-dashed border-slate-200 text-slate-400">
+                <p className="text-xs font-bold uppercase tracking-[0.2em]">No Active Positions</p>
+              </div>
+            ) : (
+              assets.map((asset) => (
+                <AssetCard key={asset.id} token={asset} userAddress={user?.wallet?.address} />
+              ))
+            )}
           </div>
         </div>
       </div>

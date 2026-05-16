@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { Loader2, ArrowUpRight, Search } from "lucide-react";
-import { TOKENS } from "../../../lib/constants";
-import { useProtocolData } from "../../../lib/hooks/useProtocolData";
+import { useProtocolData, type RwaAsset } from "../../../lib/hooks/useProtocolData";
 import { AssetCard } from "../../../components/dashboard/AssetCard";
 import { DashboardHeader } from "../../../components/dashboard/DashboardHeader";
 
@@ -24,15 +23,14 @@ export default function MarketplacePage() {
     );
   }
 
-  // Filter TOKENS to match active category and search
-  const filteredTokens = TOKENS.filter((token) => {
-    const assetData = assets.find((a) => a.address.toLowerCase() === token.address.toLowerCase());
+  // Filter assets to match active category and search
+  const filteredAssets = assets.filter((asset) => {
     const matchesCategory =
-      activeCategory === "All Assets" || assetData?.assetType === activeCategory;
+      activeCategory === "All Assets" || asset.assetType === activeCategory;
     const matchesSearch =
       !search ||
-      token.name.toLowerCase().includes(search.toLowerCase()) ||
-      assetData?.assetType?.toLowerCase().includes(search.toLowerCase());
+      asset.name.toLowerCase().includes(search.toLowerCase()) ||
+      asset.assetType?.toLowerCase().includes(search.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -113,9 +111,9 @@ export default function MarketplacePage() {
             Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="h-80 bg-white rounded-2xl border border-slate-100 animate-pulse" />
             ))
-          ) : filteredTokens.length > 0 ? (
-            filteredTokens.map((token) => (
-              <AssetCard key={token.id} token={token} userAddress={user?.wallet?.address} />
+          ) : filteredAssets.length > 0 ? (
+            filteredAssets.map((asset) => (
+              <AssetCard key={asset.id} token={asset} userAddress={user?.wallet?.address} />
             ))
           ) : (
             <div className="col-span-full py-20 text-center">

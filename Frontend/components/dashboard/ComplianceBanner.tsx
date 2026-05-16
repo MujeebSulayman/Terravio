@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 import { useReadContract } from "wagmi";
 import { BaseRWATokenABI } from "../../lib/abi";
-import { TOKENS } from "../../lib/constants";
+import { useProtocolData } from "../../lib/hooks/useProtocolData";
 
 interface ComplianceBannerProps {
   userAddress?: string;
