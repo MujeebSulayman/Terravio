@@ -53,11 +53,11 @@ export default function MarketplacePage() {
               {isLoading ? "Loading..." : `${assets.length} Assets Listed`}
             </span>
             <h2 className="text-4xl lg:text-5xl font-serif font-bold mb-6 leading-tight">
-              {featuredAsset?.name || "London Prime Residential Yield Pool"}
+              {featuredAsset?.name || "Terravio Property"}
             </h2>
             <p className="text-lg text-white/80 mb-10 leading-relaxed font-medium">
               {(featuredAsset?.metadata?.description as string) ||
-                "Access fractional ownership in a curated portfolio of high-yield residential properties. Oracle-verified valuations and automated yield distribution."}
+                "Fractional ownership in a curated portfolio of prime central London residential properties."}
             </p>
             <div className="flex items-center gap-6 flex-wrap">
               <button className="h-14 px-10 rounded-2xl bg-slate-900 text-white font-bold text-xs uppercase tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl flex items-center gap-3">
