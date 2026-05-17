@@ -13,7 +13,13 @@ export const protocolRoutes = (env: Env) => {
    */
   router.get("/assets", async (req, res, next) => {
     try {
-      const assets = await prisma.asset.findMany();
+      const assets = await prisma.asset.findMany({
+        where: {
+          address: {
+            not: null
+          }
+        }
+      });
       res.json({ success: true, data: assets });
     } catch (error) {
       console.error("[protocol/assets] DB Fetch Error:", error);
