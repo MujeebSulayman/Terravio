@@ -16,6 +16,12 @@ import { formatUnits, parseUnits, zeroAddress } from "viem";
 import { BaseRWATokenABI, ERC20ABI } from "../../lib/abi";
 import type { RwaAsset } from "../../lib/hooks/useProtocolData";
 
+const KIND_IMAGES: Record<string, string> = {
+  gold: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800",
+  property: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800",
+  carbon: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=800",
+};
+
 interface AssetCardProps {
   token: RwaAsset;
   userAddress?: string;
@@ -136,7 +142,22 @@ export function AssetCard({ token, userAddress }: AssetCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-[#C5A059]/30 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+    <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-[#C5A059]/30 hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500">
+      {/* Cover Image */}
+      <div className="h-48 w-full relative overflow-hidden">
+        <img 
+          src={KIND_IMAGES[token.kind] || KIND_IMAGES.property} 
+          alt={token.name}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute bottom-4 left-6">
+          <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[9px] font-bold uppercase tracking-widest">
+            {token.assetType}
+          </span>
+        </div>
+      </div>
+
       <div className="p-8 flex-1">
         <div className="flex justify-between items-start mb-8">
           <div className="space-y-1">
@@ -163,6 +184,11 @@ export function AssetCard({ token, userAddress }: AssetCardProps) {
             )}
           </div>
         </div>
+
+        {/* Description */}
+        <p className="text-xs text-slate-500 leading-relaxed mb-8 line-clamp-2 italic">
+          {(token.metadata?.description as string) || "Access institutional-grade fractional ownership in oracle-verified real-world assets."}
+        </p>
 
         <div className="space-y-5">
           <div className="flex justify-between items-center pb-4 border-b border-slate-50">
