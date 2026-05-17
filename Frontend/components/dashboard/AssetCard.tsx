@@ -22,6 +22,12 @@ const KIND_IMAGES: Record<string, string> = {
   carbon: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=800",
 };
 
+const ASSET_TYPE_LABELS: Record<number, string> = {
+  0: "Precious Metal",
+  1: "Real Estate",
+  2: "Environmental Credit",
+};
+
 interface AssetCardProps {
   token: RwaAsset;
   userAddress?: string;
@@ -147,13 +153,13 @@ export function AssetCard({ token, userAddress }: AssetCardProps) {
       <div className="h-48 w-full relative overflow-hidden">
         <img 
           src={KIND_IMAGES[token.kind] || KIND_IMAGES.property} 
-          alt={token.name}
+          alt={metadata ? metadata.name : token.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-4 left-6">
           <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[9px] font-bold uppercase tracking-widest">
-            {token.assetType}
+            {metadata ? ASSET_TYPE_LABELS[metadata.assetType] : token.assetType}
           </span>
         </div>
       </div>
@@ -161,15 +167,17 @@ export function AssetCard({ token, userAddress }: AssetCardProps) {
       <div className="p-8 flex-1">
         <div className="flex justify-between items-start mb-8">
           <div className="space-y-1">
-            <h3 className="font-serif font-bold text-xl text-slate-900 tracking-tight">{token.name}</h3>
+            <h3 className="font-serif font-bold text-xl text-slate-900 tracking-tight">
+              {metadata ? metadata.name : token.name}
+            </h3>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-              {metadata ? metadata.symbol : "---"} • ADDR: {token.address?.slice(0, 6) || "0x..."}...
+              {metadata ? metadata.symbol : (token.onChain?.symbol || token.symbol || "---")} • ADDR: {token.address?.slice(0, 6) || "0x..."}...
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <div className="px-3 py-1 bg-slate-900 text-[#C5A059] rounded-full text-[10px] font-bold tracking-[0.1em] shadow-sm">
-              {yieldBPS.toFixed(2)}% APY
+              {metadata ? yieldBPS.toFixed(2) : (token.onChain?.apyPercent || token.apy)}% APY
             </div>
             {isWhitelisted ? (
               <div className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded">

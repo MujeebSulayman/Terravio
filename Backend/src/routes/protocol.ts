@@ -13,24 +13,49 @@ export const protocolRoutes = (env: Env) => {
    */
   router.get("/assets", async (req, res, next) => {
     try {
-      const assets = await prisma.asset.findMany({
+      // 1. Fetch off-chain registry from DB
+      const dbAssets = await prisma.asset.findMany({
         where: {
           address: {
             not: null
           }
         }
       });
-      res.json({ success: true, data: assets });
+
+      // 2. Fetch live on-chain health data
+      const onChainData = await service.getGlobalHealth();
+      const onChainMap = new Map(onChainData.map((h) => [h.address.toLowerCase(), h]));
+
+      // 3. Dynamically merge live on-chain data into the registry response
+      const enrichedAssets = dbAssets.map((asset) => {
+        const addr = (asset.address || "").toLowerCase();
+        const onChain = onChainMap.get(addr);
+        const hasOnChain = onChain && !("error" in onChain);
+        const onChainData = hasOnChain ? (onChain as any) : null;
+        
+        return {
+          id: asset.id,
+          kind: asset.kind,
+          externalId: asset.externalId,
+          address: asset.address,
+          name: onChainData ? onChainData.name : asset.name,
+          symbol: onChainData ? onChainData.symbol : asset.symbol,
+          status: onChainData ? onChainData.statusLabel : asset.status,
+          quantity: asset.quantity,
+          apy: onChainData ? parseFloat(onChainData.apyPercent) : (asset.apy ?? 0),
+          assetType: asset.assetType,
+          metadata: asset.metadata,
+        };
+      });
+
+      res.json({ success: true, data: enrichedAssets });
     } catch (error) {
-      console.error("[protocol/assets] DB Fetch Error:", error);
+      console.error("[protocol/assets] Enriched Fetch Error:", error);
       next(error);
     }
   });
 
-  /**
-   * GET /api/protocol/health
-   * Returns the live on-chain status of all RWA tokens.
-   */
+
   router.get("/health", async (req, res, next) => {
     try {
       const health = await service.getGlobalHealth();
@@ -40,10 +65,7 @@ export const protocolRoutes = (env: Env) => {
     }
   });
 
-  /**
-   * POST /api/protocol/distribute-yield
-   * Manual trigger for yield distribution (Admin Only)
-   */
+
   router.post("/distribute-yield", async (req, res, next) => {
     const { tokenAddress, amountUSD } = req.body;
     

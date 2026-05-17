@@ -107,7 +107,7 @@ export function ProtocolComposition({ assets, isLoading = false }: ProtocolCompo
                       />
                     </div>
 
-                    <p className="text-[10px] text-slate-400 font-medium mt-3">{asset.name}</p>
+                    <p className="text-[10px] text-slate-400 font-medium mt-3">{asset.onChain?.name || asset.name}</p>
 
                     {asset.onChain?.valuation && (
                       <p className="text-xs font-bold text-[#C5A059] mt-1">

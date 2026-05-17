@@ -79,7 +79,7 @@ export function InventoryList({ assets, isLoading = false }: InventoryListProps)
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{asset.assetType}</p>
-                    <p className="text-sm font-bold text-slate-900 truncate">{asset.name}</p>
+                    <p className="text-sm font-bold text-slate-900 truncate">{asset.onChain?.name || asset.name}</p>
                   </div>
                   {/* Status badge */}
                   <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest ${
@@ -114,13 +114,13 @@ export function InventoryList({ assets, isLoading = false }: InventoryListProps)
                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Registry APY</span>
                     <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
                       <TrendingUp className="w-3 h-3" />
-                      {asset.apy}%
+                      {asset.onChain?.apyPercent || asset.apy}%
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Token Symbol</span>
-                    <span className="text-[10px] font-bold text-slate-900 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{asset.symbol}</span>
+                    <span className="text-[10px] font-bold text-slate-900 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{asset.onChain?.symbol || asset.symbol}</span>
                   </div>
                 </div>
 
